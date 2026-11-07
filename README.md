@@ -28,6 +28,57 @@ magpie 内置的 cloak 只对 `antigravity` 账号生效，而 CPA 是以 API ke
 - Google 可以随时改变它匹配的内容。届时拒绝会再次出现，而 magpie 可能不再把它识别为这种拒绝：它可能被读成配额真的用光，从而让账号进入冷却。
 - 只处理开场的身份行。客户端名称若出现在工具名、技能 id、路径或后面的句子里，不会被改动——改这些会破坏工具调用。
 
+## 怎么确认它在工作
+
+三步，由浅入深。
+
+### 1. 安装前：它会把你的提示词改成什么样
+
+```sh
+node check.mjs
+```
+
+用一组样例提示词跑一遍中间件，打印每段的输入与输出。换成你自己的文本：
+
+```sh
+node check.mjs prompt.txt          # 显示改动前后
+node check.mjs prompt.txt --diff   # 只显示有变化的行
+```
+
+只读本地文件。它告诉你**文本层的结果**，但不证明 magpie 真的在调用它。
+
+### 2. 安装后：magpie 到底有没有调用它
+
+```sh
+magpie plugin list --json
+```
+
+在 `middleware` 段里，按插件的 spec 找到对应项：
+
+| 字段 | 期望值 |
+|---|---|
+| `hooks` | `["onProvider"]`——它注册的钩子 |
+| `error` | 不存在；有值说明没加载成功 |
+| `calls` | 每有一个请求经过网关就增长 |
+| `avgMicros` | 每次调用的平均耗时，单位微秒 |
+| `failures` | 应保持 0 |
+
+GUI 的 Plugins 页面在插件卡片上显示同样的内容：`N calls, X µs each`，有失败时还会显示失败次数。
+
+**`calls` 一直是 0、而你确实在发请求——这才是关键信号。** 它说明钩子加载了但 `shouldRun` 从未命中，几乎总是因为供应商 id 和 `providers` 里的不一致。
+
+### 3. 安装后：供应商 id 对不对
+
+```sh
+magpie provider list
+```
+
+把你 CPA 供应商的 id 和选项里的 `providers` 对比。若不一致，中间件会加载但永不被调用——请求毫无变化，也不报任何错。改成真实 id：
+
+```sh
+magpie plugin options <插件名> '{"providers":["<你的供应商 id>"]}'
+```
+
 ## 选项
 
 ```json
@@ -68,6 +119,8 @@ node test.mjs
 ```
 
 `cases.json` 含 94 个用例：每个给出一个请求、它到达时的供应商与协议，以及必须发送出去的 body。没有 `expect_request` 的用例必须原样返回。运行器复现了 magpie 的契约——被修改的 body 必须以对象返回，而 `undefined` 表示「发送原始内容」。
+
+`check.mjs` 是给人看的自检工具，见上文「怎么确认它在工作」。它不参与发布（不在 `package.json` 的 `files` 里）。
 
 ## 许可证
 
