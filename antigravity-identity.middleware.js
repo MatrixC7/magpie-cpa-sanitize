@@ -1,7 +1,8 @@
 /**
- * cpa-sanitize.middleware.js — Magpie 网关中间件
+ * antigravity-identity.middleware.js — Magpie 网关中间件
  *
- * 作用于「Magpie → CPA (CLIProxyAPI) → Google Antigravity」链路上的系统提示词：
+ * 作用于任何反代 Antigravity 的供应商（CPA/CLIProxyAPI、new-api、one-api、
+ * 自建 relay 等）链路，针对其系统提示词：
  * 删除 Anthropic billing 头，并把第三方客户端的开场身份声明归一化为官方身份。
  * 代码块、行内代码、安全策略与工具规则一律保持原样。
  *
@@ -11,7 +12,7 @@
  *   - 归属对象必须足够简单（≤80 字符、≤6 词、无功能词）才替换，否则保留原文
  *   - 超出预算的输入整篇原样返回（fail-open）
  *
- * 默认选项（`magpie plugin options cpa-sanitize '<json>'` 覆盖）：
+ * 默认选项（`magpie plugin options antigravity-identity '<json>'` 覆盖）：
  *   {
  *     "providers": ["cli-proxy-api"],
  *     "accounts": [],

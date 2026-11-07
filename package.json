@@ -1,10 +1,10 @@
 {
-  "name": "magpie-middleware-cpa-sanitize",
+  "name": "magpie-middleware-antigravity-identity",
   "version": "0.1.0",
-  "description": "magpie gateway middleware: normalize third-party client identity in the system prompt sent through CLIProxyAPI to Antigravity, and strip Anthropic billing headers, without touching code blocks or tool rules",
+  "description": "magpie gateway middleware: normalize third-party client identity in the system prompt sent through any Antigravity-reverse-proxying provider (CPA/CLIProxyAPI, new-api, one-api, self-hosted relays), and strip Anthropic billing headers, without touching code blocks or tool rules",
   "type": "module",
   "files": [
-    "cpa-sanitize.middleware.js",
+    "antigravity-identity.middleware.js",
     "README.md",
     "README.en.md"
   ],
@@ -14,6 +14,9 @@
     "antigravity",
     "cliproxyapi",
     "cpa",
+    "new-api",
+    "one-api",
+    "reverse-proxy",
     "deepseek-harness",
     "opencode",
     "codex",
@@ -22,10 +25,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MatrixC7/magpie-cpa-sanitize.git"
+    "url": "git+https://github.com/MatrixC7/magpie-antigravity-identity.git"
   },
   "magpie": {
-    "middleware": "./cpa-sanitize.middleware.js",
+    "middleware": "./antigravity-identity.middleware.js",
     "options": {
       "providers": ["cli-proxy-api"],
       "accounts": [],

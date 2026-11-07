@@ -1,12 +1,12 @@
-# magpie-middleware-cpa-sanitize
+# magpie-middleware-antigravity-identity
 
 [简体中文](README.md) | **English**
 
-Third-party clients behind CLIProxyAPI, on Antigravity, as [magpie](https://usemagpie.ai) gateway middleware.
+Third-party clients behind any Antigravity-reverse-proxying provider, on Antigravity, as [magpie](https://usemagpie.ai) gateway middleware.
 
-A client such as DSH (DeepSeek Harness), OpenCode, Claude Code or Codex puts its own name in the system prompt it sends. When that request is routed through CLIProxyAPI (CPA) to Antigravity, the prompt still says who wrote it, and Antigravity answers some of these with `429 Resource has been exhausted` however much quota is left — which CPA reads as a real quota running out and rests the account.
+A client such as DSH (DeepSeek Harness), OpenCode, Claude Code or Codex puts its own name in the system prompt it sends. When that request is routed through a provider that reverse-proxies Antigravity to Antigravity, the prompt still says who wrote it, and Antigravity answers some of these with `429 Resource has been exhausted` however much quota is left — which the provider reads as a real quota running out and rests the account.
 
-magpie's built-in cloak only acts on an `antigravity` account, and CPA is a custom provider reached by API key (`ctx.provider.account` is empty). This middleware runs on `onProvider` for a CPA provider and rewrites the system prompt just before the request leaves for CPA.
+Such providers include CPA (CLIProxyAPI), new-api, one-api and self-hosted relays. magpie's built-in cloak only acts on an `antigravity` account, and these are usually custom providers reached by API key (`ctx.provider.account` is empty). This middleware runs on `onProvider` for such a provider and rewrites the system prompt just before the request leaves for it.
 
 What it does:
 
@@ -21,6 +21,20 @@ What it leaves alone:
 - security-policy text such as "Assist with authorized security testing".
 
 It needs a magpie with the `onProvider` hook (v0.1.1283 or later): an older magpie loads it and never calls it, so requests go as they came.
+
+## Install
+
+```sh
+magpie plugin add github:MatrixC7/magpie-antigravity-identity
+```
+
+Then put your provider's id in the options — the default is `cli-proxy-api`; another reverse proxy takes its own id:
+
+```sh
+magpie plugin options magpie-antigravity-identity '{"providers":["<your provider id>"]}'
+```
+
+Restart magpie and check it is running on the GUI's Plugins page (see "Is it working?").
 
 ## Before you turn it on
 
@@ -78,15 +92,15 @@ magpie providers                  # every provider and its id
 magpie provider cli-proxy-api     # one provider's model list
 ```
 
-Compare your CPA provider's id against `providers` in the options. If they differ, the middleware loads and is never called: nothing in the request changes and no error is reported.
+Compare your provider's id against `providers` in the options. If they differ, the middleware loads and is never called: nothing in the request changes and no error is reported.
 
 Model names are covered in the next section.
 
 ## Only for models served by Antigravity
 
-CPA usually proxies several sources at once: Antigravity, Codex, and various third-party endpoints. By default this middleware acts on **every** request through that CPA provider, which may not be what you want.
+Such a provider usually proxies several sources at once: Antigravity, Codex, and various third-party endpoints. By default this middleware acts on **every** request through that provider, which may not be what you want.
 
-**magpie cannot know who CPA routed the request to internally.** `ctx.provider` carries only `id` / `name` / `account` / `model`; to magpie, CPA is just an HTTP endpoint. CPA's `/v1/models` returns names only, without provenance.
+**magpie cannot know who the provider routed the request to internally.** `ctx.provider` carries only `id` / `name` / `account` / `model`; to magpie, it is just an HTTP endpoint. Its `/v1/models` returns names only, without provenance.
 
 The model name is the one reliable, visible signal, so limit with the `models` allowlist:
 
@@ -120,7 +134,7 @@ Its output looks like:
 
 Pick the ones Antigravity serves.
 
-If CPA's config has `excluded-models.antigravity`, those are the **excluded** ones; what is not listed there is usually what Antigravity serves.
+Take the provider's exclusion list as the guide — CPA's config, for instance, has `excluded-models.antigravity`: those are the **excluded** ones, and what is not listed there is usually what Antigravity serves.
 
 ### The name you list carries no provider prefix
 
@@ -160,7 +174,7 @@ Either leave the field out entirely, or list concrete model names. Never leave i
 
 ### List only the models you actually use
 
-You do not need every Antigravity model. List the ones you really send through CPA and that carry the identity-leak risk:
+You do not need every Antigravity model. List the ones you really send through that provider and that carry the identity-leak risk:
 
 ```json
 {
@@ -184,8 +198,8 @@ Other models (Codex, DeepSeek, …) are left alone — they are not served by An
 }
 ```
 
-- `providers`: provider ids it acts on. Default `["cli-proxy-api"]`, the id a CPA provider usually has in magpie.
-- `accounts`: subscription kinds it acts on, for a provider logged in directly. Empty by default: a CPA provider is matched by id. Set `["antigravity"]` to also act on a direct Antigravity account.
+- `providers`: provider ids it acts on. Default `["cli-proxy-api"]`, the id CPA usually has in magpie; another reverse proxy takes its own id here.
+- `accounts`: subscription kinds it acts on, for a provider logged in directly. Empty by default: a provider reached by API key is matched by id. Set `["antigravity"]` to also act on a direct Antigravity account.
 - `models`: exact model allowlist; see "Filter order" below and "Only for models served by Antigravity". **Do not leave it as an empty array** — that disables the whole middleware.
 - `sanitizeBrands`: also replace competitor brand words with `Google`. Off by default because it is lossy — it rewrites API names, hostnames and model ids in prose too.
 - `cloakFallbackWords`: extra words to break with a zero-width space (U+200B) instead of replacing. Empty by default.
@@ -212,9 +226,9 @@ Examples:
 
 | providers | accounts | models | Result |
 |---|---|---|---|
-| `["cli-proxy-api"]` | `[]` | absent | every model of the CPA provider |
+| `["cli-proxy-api"]` | `[]` | absent | every model of that provider |
 | `["cli-proxy-api"]` | `[]` | `["gemini-3-flash"]` | that model only |
-| `["cli-proxy-api"]` | `["antigravity"]` | absent | the CPA provider **or** a direct Antigravity account |
+| `["cli-proxy-api"]` | `["antigravity"]` | absent | that provider **or** a direct Antigravity account |
 | `[]` | `[]` | absent | nothing at all |
 
 An empty `providers` and `accounts` together disable it entirely.

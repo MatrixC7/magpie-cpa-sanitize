@@ -9,7 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const dir = path.dirname(new URL(import.meta.url).pathname);
-const source = fs.readFileSync(path.join(dir, "cpa-sanitize.middleware.js"), "utf8");
+const source = fs.readFileSync(path.join(dir, "antigravity-identity.middleware.js"), "utf8");
 
 // 在一个隔离的沙箱里加载中间件（moejs 里没有 vm，这里只是本机自检用）
 const { createContext, runInContext } = await import("node:vm");

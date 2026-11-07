@@ -8,7 +8,7 @@ import vm from "node:vm";
 import path from "node:path";
 
 const dir = path.dirname(new URL(import.meta.url).pathname);
-const middlewarePath = path.join(dir, "cpa-sanitize.middleware.js");
+const middlewarePath = path.join(dir, "antigravity-identity.middleware.js");
 const casesPath = path.join(dir, "cases.json");
 
 const source = fs.readFileSync(middlewarePath, "utf8");

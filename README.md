@@ -1,12 +1,12 @@
-# magpie-middleware-cpa-sanitize
+# magpie-middleware-antigravity-identity
 
 **简体中文** | [English](README.en.md)
 
-把经 CLIProxyAPI 转发的第三方客户端，接到 Antigravity 上的 [magpie](https://usemagpie.ai) 网关中间件。
+把经任何反代 Antigravity 的供应商转发的第三方客户端，接到 Antigravity 上的 [magpie](https://usemagpie.ai) 网关中间件。
 
-DSH（DeepSeek Harness）、OpenCode、Claude Code、Codex 这类客户端会把自己的名字写进所发送的系统提示词里。当该请求经 CLIProxyAPI（CPA）路由到 Antigravity 时，提示词里仍然写着它是谁写的，而 Antigravity 对其中一些会回一个 `429 Resource has been exhausted`——无论配额还剩多少。CPA 会把它读成配额真的用光了，从而让账号进入冷却。
+DSH（DeepSeek Harness）、OpenCode、Claude Code、Codex 这类客户端会把自己的名字写进所发送的系统提示词里。当该请求经某个反代 Antigravity 的供应商路由到 Antigravity 时，提示词里仍然写着它是谁写的，而 Antigravity 对其中一些会回一个 `429 Resource has been exhausted`——无论配额还剩多少。上游会把它读成配额真的用光了，从而让账号进入冷却。
 
-magpie 内置的 cloak 只对 `antigravity` 账号生效，而 CPA 是以 API key 接入的自定义供应商（`ctx.provider.account` 为空）。这个中间件在 CPA 供应商的 `onProvider` 上运行，在请求发往 CPA 之前改写系统提示词。
+这类供应商包括 CPA（CLIProxyAPI）、new-api、one-api 以及各种自建 relay。magpie 内置的 cloak 只对 `antigravity` 账号生效，而它们通常是以 API key 接入的自定义供应商（`ctx.provider.account` 为空）。这个中间件在该供应商的 `onProvider` 上运行，在请求发往上游之前改写系统提示词。
 
 它做的事：
 
@@ -21,6 +21,20 @@ magpie 内置的 cloak 只对 `antigravity` 账号生效，而 CPA 是以 API ke
 - 诸如「Assist with authorized security testing」这类安全策略文本。
 
 它需要带有 `onProvider` 钩子的 magpie（v0.1.1283 或更新版本）：旧版 magpie 会加载它但从不调用，因此请求会原样发出。
+
+## 安装
+
+```sh
+magpie plugin add github:MatrixC7/magpie-antigravity-identity
+```
+
+然后把你的供应商 id 填进选项——默认是 `cli-proxy-api`，用别的反代就改成它的 id：
+
+```sh
+magpie plugin options magpie-antigravity-identity '{"providers":["<你的供应商 id>"]}'
+```
+
+改完重启 magpie，用 GUI 的 Plugins 页面确认它在跑（见「怎么确认它在工作」）。
 
 ## 启用之前
 
@@ -78,15 +92,15 @@ magpie providers                  # 列出所有供应商及其 id
 magpie provider cli-proxy-api     # 看某一个供应商的模型列表
 ```
 
-把你 CPA 供应商的 id 和选项里的 `providers` 对比。若不一致，中间件会加载但永不被调用——请求毫无变化，也不报任何错。
+把你所用供应商的 id 和选项里的 `providers` 对比。若不一致，中间件会加载但永不被调用——请求毫无变化，也不报任何错。
 
 模型名的确认见下一节「只对 antigravity 的模型生效」。
 
 ## 只对 antigravity 的模型生效
 
-CPA 通常同时代理多个来源：antigravity 反代、Codex、以及各种第三方公益站。默认情况下中间件会对**所有**经该 CPA 供应商发出的请求生效，这可能不是你想要的。
+这类反代供应商通常同时代理多个来源：antigravity 反代、Codex、以及各种第三方公益站。默认情况下中间件会对**所有**经该供应商发出的请求生效，这可能不是你想要的。
 
-**magpie 无法知道 CPA 内部把请求路由给了谁。** `onProvider` 收到的 `ctx.provider` 只有 `id` / `name` / `account` / `model` 四个字段；对 magpie 而言 CPA 只是一个 HTTP 端点。CPA 的 `/v1/models` 也只返回模型名，不带来源标注。
+**magpie 无法知道上游反代内部把请求路由给了谁。** `onProvider` 收到的 `ctx.provider` 只有 `id` / `name` / `account` / `model` 四个字段；对 magpie 而言它只是一个 HTTP 端点。它的 `/v1/models` 也只返回模型名，不带来源标注。
 
 但模型名是唯一可靠且可见的信号，所以用 `models` 白名单来限定：
 
@@ -120,7 +134,7 @@ magpie provider cli-proxy-api
 
 挑出由 antigravity 反代提供的那几个。
 
-如果 CPA 配置文件里有 `excluded-models.antigravity`，那里列的是**被排除**的模型；不在列表里的通常就是 antigravity 提供的。
+以上游反代的排除列表为准，例如 CPA 配置文件里的 `excluded-models.antigravity`：那里列的是**被排除**的模型；不在列表里的通常就是 antigravity 提供的。
 
 ### 注意：填的模型名不带供应商前缀
 
@@ -160,7 +174,7 @@ Model string `json:"model"` // what magpie sends the vendor
 
 ### 建议：只填你真正在用的模型
 
-不必把 antigravity 的模型全部列出来。只填你实际会经 CPA 发送、且存在身份泄漏风险的那几个即可：
+不必把 antigravity 的模型全部列出来。只填你实际会经该供应商发送、且存在身份泄漏风险的那几个即可：
 
 ```json
 {
@@ -184,8 +198,8 @@ Model string `json:"model"` // what magpie sends the vendor
 }
 ```
 
-- `providers`：它作用的供应商 id。默认为 `["cli-proxy-api"]`，即 CPA 供应商在 magpie 中通常使用的 id。
-- `accounts`：它作用的订阅类型，针对直接登录的供应商。默认为空：CPA 供应商按 id 匹配。设为 `["antigravity"]` 可同时作用于直连的 Antigravity 账号。
+- `providers`：它作用的供应商 id。默认为 `["cli-proxy-api"]`，即 CPA 在 magpie 中通常使用的 id；其他反代填各自的 id 即可。
+- `accounts`：它作用的订阅类型，针对直接登录的供应商。默认为空：以 API key 接入的供应商按 id 匹配。设为 `["antigravity"]` 可同时作用于直连的 Antigravity 账号。
 - `models`：精确的模型白名单，见下方「筛选顺序」和「只对 antigravity 的模型生效」。**不要留空数组**——空数组会让整个中间件失效。
 - `sanitizeBrands`：同时把竞品厂牌词替换为 `Google`。默认关闭，因为它是有损的——它会连散文中的 API 名称、主机名和模型 id 一起改写。
 - `cloakFallbackWords`：额外的词，用零宽空格（U+200B）拆开而不是替换。默认为空。
@@ -212,9 +226,9 @@ Model string `json:"model"` // what magpie sends the vendor
 
 | providers | accounts | models | 结果 |
 |---|---|---|---|
-| `["cli-proxy-api"]` | `[]` | 缺省 | CPA 供应商的所有模型都处理 |
+| `["cli-proxy-api"]` | `[]` | 缺省 | 该供应商的所有模型都处理 |
 | `["cli-proxy-api"]` | `[]` | `["gemini-3-flash"]` | 只有该模型处理 |
-| `["cli-proxy-api"]` | `["antigravity"]` | 缺省 | CPA 供应商 **或** 直连 antigravity 账号都处理 |
+| `["cli-proxy-api"]` | `["antigravity"]` | 缺省 | 该供应商 **或** 直连 antigravity 账号都处理 |
 | `[]` | `[]` | 缺省 | 完全不生效 |
 
 `providers` 与 `accounts` 同时为空时，中间件完全不生效。
