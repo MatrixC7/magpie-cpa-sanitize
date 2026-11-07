@@ -5,7 +5,8 @@
   "type": "module",
   "files": [
     "cpa-sanitize.middleware.js",
-    "README.md"
+    "README.md",
+    "README.en.md"
   ],
   "keywords": [
     "magpie",
