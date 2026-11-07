@@ -11,7 +11,8 @@ DSH（DeepSeek Harness）、OpenCode、Claude Code、Codex 这类客户端会把
 它做的事：
 
 - 删除 Anthropic 计费头行 `x-anthropic-billing-header: …`，那是元数据，不属于提示词内容；
-- 把开场的身份声明——`You are DSH.`、`You are opencode, …`、`You are Codex, a coding agent based on GPT-5.`、`You are Hermes Agent, …`、`You are Claude Code, …`、`你是…开发的助手`——替换为一句官方 Antigravity 身份。
+- 把开场的身份声明——`You are DSH.`、`You are opencode, …`、`You are Codex, a coding agent based on GPT-5.`、`You are Hermes Agent, …`、`You are Claude Code, …`、`你是…开发的助手`——替换为一句官方 Antigravity 身份；
+- 连续的身份声明只保留第一处。DSH 之类的客户端会在开头连写两句身份（`You are an AI agent powered by DeepSeek Harness.` 与 `You are a coding agent powered by …`），若逐句替换就会得到两段一模一样的官方开场白——真正的 Antigravity 提示词绝不会这样复读，那本身就是一种可识别的清洗痕迹。冗余的那句会被合并掉，逗号之后的约束（`… , never exfiltrate credentials.`）则原样保留。
 
 它不改动的内容：
 
@@ -273,6 +274,7 @@ Model string `json:"model"` // what magpie sends the vendor
 - **归属对象超过 80 字符或 6 个词**时不做处理，原因同上。
 - **单段系统文本超过 1,000,000 字符**时原样透传，使钩子不会撞上 magpie 的 250 毫秒上限。这远高于真实系统提示词的长度。
 - **每行最多 64 次身份替换**，且不在超过 2048 字符的单句内做推断。
+- **被非身份内容隔开的重复身份**：只有紧邻的身份声明才会折叠。中间夹一段散文、空行之后又出现身份句，属于客户端自己的结构，两处都会保留。
 - **常见情形之外的 Markdown**：setext 标题、HTML 块和表格不会被当作代码容器处理。
 
 ## 测试
@@ -281,7 +283,7 @@ Model string `json:"model"` // what magpie sends the vendor
 node test.mjs
 ```
 
-`cases.json` 含 94 个用例：每个给出一个请求、它到达时的供应商与协议，以及必须发送出去的 body。没有 `expect_request` 的用例必须原样返回。运行器复现了 magpie 的契约——被修改的 body 必须以对象返回，而 `undefined` 表示「发送原始内容」。
+`cases.json` 含 108 个用例：每个给出一个请求、它到达时的供应商与协议，以及必须发送出去的 body。没有 `expect_request` 的用例必须原样返回。运行器复现了 magpie 的契约——被修改的 body 必须以对象返回，而 `undefined` 表示「发送原始内容」。
 
 `check.mjs` 是给人看的自检工具，见上文「怎么确认它在工作」。它不参与发布（不在 `package.json` 的 `files` 里）。
 

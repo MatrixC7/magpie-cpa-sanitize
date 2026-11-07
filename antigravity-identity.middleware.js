@@ -9,10 +9,11 @@
  * 处理范围：
  *   - 只处理 system / developer / instructions 等系统级文本，不动 user / assistant 历史
  *   - 只改行首（含引用、列表、标题容器内）的明确身份句，不做任意自然语言推断
+ *   - 连续的身份声明只保留第一处；逗号之后的约束原样保留
  *   - 归属对象必须足够简单（≤80 字符、≤6 词、无功能词）才替换，否则保留原文
  *   - 超出预算的输入整篇原样返回（fail-open）
  *
- * 默认选项（`magpie plugin options antigravity-identity '<json>'` 覆盖）：
+ * 默认选项（`magpie plugin options magpie-middleware-antigravity-identity '<json>'` 覆盖）：
  *   {
  *     "providers": ["cli-proxy-api"],
  *     "accounts": [],
@@ -323,6 +324,34 @@ function applyCloak(text, cloakRe) {
 // 官方身份串去掉句末标点后的主体，用于识别两种句读形态（句号 / 逗号续写）。
 const IDENTITY_STEM = OFFICIAL_ANTIGRAVITY_IDENTITY.slice(0, -1);
 
+/** 该句是否已经是官方身份声明本身。用于让"已经洗过"的文本同样参与去重。 */
+function isOfficialIdentity(sentence, punct) {
+  return sentence === IDENTITY_STEM && (punct === "." || punct === "");
+}
+
+/** 句首首字母大写（仅 ASCII 字母）。 */
+function capitalizeFirst(text) {
+  const c = text[0];
+  return c >= "a" && c <= "z" ? c.toUpperCase() + text.slice(1) : text;
+}
+
+/**
+ * 从"逗号续写"形态的替换结果中取出约束部分。
+ *
+ * 输入 `<官方身份去句号>, and you must follow the rules.`
+ * 输出 `And you must follow the rules.`
+ *
+ * 身份部分被去重丢弃时，逗号之后的业务约束必须完整保留，否则会误删规则。
+ * 无法确认结构时返回 null，调用方退回整句原样输出（宁可不洗，不可删错）。
+ */
+function continuationConstraint(replacement) {
+  if (replacement.indexOf(IDENTITY_STEM) !== 0) return null;
+  const sep = replacement[IDENTITY_STEM.length];
+  if (sep !== "," && sep !== "，") return null;
+  const rest = replacement.slice(IDENTITY_STEM.length + 1).trim();
+  return rest === "" ? null : capitalizeFirst(rest);
+}
+
 /**
  * 对非身份文本应用可选的品牌替换与 cloak。
  *
@@ -413,6 +442,12 @@ function skipContainers(line) {
 }
 
 /**
+ * 行前缀里是否含有序列表标记（`1.` / `2)`）。
+ * 删除这类行会留下编号断档，所以它们不参与整行去重。
+ */
+const RE_ORDERED_IN_PREFIX = /(?:^|[ \t>])\d{1,9}[.)][ \t]/;
+
+/**
  * 剥离包裹身份句的成对强调标记（`**…**`、`*…*`、`__…__`、`_…_`）。
  * 返回 { inner, wrap } 或 null。仅在内容确实以强调开头并成对结尾时生效。
  */
@@ -431,9 +466,14 @@ function unwrapEmphasis(content) {
  * 行可能带容器前缀（引用/列表/标题，可任意嵌套）或成对强调包裹；
  * 身份声明在其中语义上仍是"行首"，因此剥离后匹配，再原样拼回。
  *
+ * `dedupe` 跨行共享，用于折叠连续的身份声明：`dedupe.emitted` 表示
+ * 紧邻的上文已经产出了身份句。命中纯身份句时只保留第一处；命中
+ * "身份 + 逗号 + 约束"时只丢身份、保留约束；遇到非身份散文即解除链。
+ *
+ * @param {{emitted:boolean}} dedupe 跨行的连续身份状态
  * @returns {string|null} null 表示该行应被删除
  */
-function processLine(line, skipIdentity, partialTail, options, cloakRe) {
+function processLine(line, skipIdentity, partialTail, options, cloakRe, dedupe) {
   if (!partialTail && line.indexOf("`") === -1 && RE_BILLING_LINE.test(line)) return null;
 
   const base = skipContainers(line);
@@ -452,6 +492,13 @@ function processLine(line, skipIdentity, partialTail, options, cloakRe) {
   let pos = 0;
   let firstSentence = true;
   let replacements = 0;
+  // 是否有整句因去重被丢弃。全部内容都被丢弃时整行返回 null（连同换行一起消失），
+  // 否则会留下一个只有换行的空行。
+  let dropped = false;
+
+  // 有序列表项不能整行删除：删掉 `2.` 会留下 `1.` → `3.` 的编号断档，
+  // 那是另一种比重复更显眼的异常，也会破坏工具定义的结构。这类行原样保留。
+  const droppable = !RE_ORDERED_IN_PREFIX.test(prefix);
 
   for (;;) {
     let start = pos;
@@ -479,16 +526,48 @@ function processLine(line, skipIdentity, partialTail, options, cloakRe) {
       if (replacement !== null) replacements++;
     }
 
+    // 连续身份去重：上文已经产出身份句时，本句不再重复产出。
+    // 幂等性要求"已是官方身份"的句子也参与判定，否则二次处理会把
+    // 首次处理留下的重复段当成普通散文保留。
+    const isIdentity =
+      replacement !== null || (!skip && isOfficialIdentity(sentence, punct));
+
+    if (isIdentity && dedupe.emitted) {
+      // 冗余身份句：整句丢弃；若是"身份 + 逗号 + 约束"，只丢身份、留下约束。
+      const keep = replacement !== null ? continuationConstraint(replacement) : null;
+      if (keep !== null) {
+        out.push(decorate(content.slice(pos, start), options, cloakRe));
+        out.push(decorate(keep, options, cloakRe));
+      } else if (droppable) {
+        // 连同前导空白一起丢弃，避免留下悬挂空格
+        dropped = true;
+      } else {
+        // 有序列表项：不能删行，退化为原样输出该句（宁可重复，不可断号）
+        out.push(decorate(content.slice(pos, start), options, cloakRe));
+        if (replacement !== null) out.push(replacement);
+        else out.push(decorate(sentence + punct, options, cloakRe));
+      }
+      firstSentence = false;
+      if (atEnd) break;
+      pos = end + 1;
+      continue;
+    }
+
     out.push(decorate(content.slice(pos, start), options, cloakRe));
     if (replacement !== null) out.push(replacement);
     else out.push(decorate(sentence + punct, options, cloakRe));
 
+    dedupe.emitted = isIdentity;
     firstSentence = false;
 
     if (atEnd) break;
     pos = end + 1;
   }
 
+  // 整行没有剩下任何可见内容：返回 null 让调用方连换行一起删掉。
+  // 只看正文部分——`- `、`> ` 这类容器前缀不能算"还有内容"，
+  // 否则列表项/引用会被留成一个空的 `- ` 行。
+  if (dropped && out.join("").trim() === "") return null;
   return prefix + wrap + out.join("") + wrap;
 }
 
@@ -550,21 +629,22 @@ function findCodeSpans(text) {
  * 处理一个段落：切分 code span 与散文，只清洗散文部分。
  * 未配对的反引号按普通文字处理；配对不跨越段落（调用方已按块切分）。
  */
-function sanitizeParagraph(text, options, cloakRe) {
+function sanitizeParagraph(text, options, cloakRe, dedupe) {
   const spans = findCodeSpans(text);
-  if (spans.length === 0) return sanitizeFragment(text, options, cloakRe, false, false);
+  if (spans.length === 0) return sanitizeFragment(text, options, cloakRe, false, false, dedupe);
 
   const out = [];
   let at = 0;
   let afterCode = false;
   for (let i = 0; i < spans.length; i++) {
     const span = spans[i];
-    out.push(sanitizeFragment(text.slice(at, span.start), options, cloakRe, afterCode, true));
+    out.push(sanitizeFragment(text.slice(at, span.start), options, cloakRe, afterCode, true, dedupe));
     out.push(text.slice(span.start, span.end));
+    // code span 是实体内容，不算身份句，也不打断已有身份链
     at = span.end;
     afterCode = true;
   }
-  out.push(sanitizeFragment(text.slice(at), options, cloakRe, afterCode, false));
+  out.push(sanitizeFragment(text.slice(at), options, cloakRe, afterCode, false, dedupe));
   return out.join("");
 }
 
@@ -573,7 +653,7 @@ function sanitizeParagraph(text, options, cloakRe) {
  * 每个物理行连同其自身的行终止符一起处理：删除某行时，该行的换行也一并消失，
  * 因此不会在删除处留下空行，也不会吞掉相邻行之间的分隔。
  */
-function sanitizeFragment(fragment, options, cloakRe, startsAfterCode, endsBeforeCode) {
+function sanitizeFragment(fragment, options, cloakRe, startsAfterCode, endsBeforeCode, dedupe) {
   if (!fragment) return fragment;
   const kept = [];
   let at = 0;
@@ -597,7 +677,7 @@ function sanitizeFragment(fragment, options, cloakRe, startsAfterCode, endsBefor
 
     const isFirst = index === 0;
     const isLast = nl === -1;
-    const result = processLine(body, startsAfterCode && isFirst, endsBeforeCode && isLast, options, cloakRe);
+    const result = processLine(body, startsAfterCode && isFirst, endsBeforeCode && isLast, options, cloakRe, dedupe);
     if (result !== null) kept.push(result + term);
     index++;
     if (isLast) break;
@@ -713,10 +793,20 @@ export function sanitizeSystemText(text, rawOptions = {}) {
   let itemIndent = 0;
   let paragraphOpen = false;
 
+  // 连续身份去重状态：跨段落共享（空行分隔的相邻段落也算"连续"）。
+  // suppressBlank 在整段被丢弃后吞掉紧随其后的空行，避免留下 3+ 个连续空行。
+  const dedupe = { emitted: false };
+  let suppressBlank = false;
+
   const flush = () => {
     if (prose.length === 0) return;
-    out.push(sanitizeParagraph(prose.join(""), options, cloakRe));
+    const text = sanitizeParagraph(prose.join(""), options, cloakRe, dedupe);
     prose = [];
+    if (text === "") {
+      suppressBlank = true;
+      return;
+    }
+    out.push(text);
   };
 
   let at = 0;
@@ -743,21 +833,31 @@ export function sanitizeSystemText(text, rawOptions = {}) {
       out.push(line);
       if (effIndent <= 3 && fenceCloser(body.slice(info.contentStart), fence)) fence = null;
       paragraphOpen = false;
+      dedupe.emitted = false;
+      suppressBlank = false;
       continue;
     }
 
     // 2. 空行
     if (info.blank) {
       flush();
+      // 整段被丢弃时空行也一并吞掉，否则会留下不自然的连续空行
+      if (suppressBlank) {
+        paragraphOpen = false;
+        continue;
+      }
       out.push(line);
       paragraphOpen = false;
       continue;
     }
 
+    suppressBlank = false;
+
     // 3. 缩进代码块（不能打断段落）
     if (effIndent >= 4 && !paragraphOpen) {
       flush();
       out.push(line);
+      dedupe.emitted = false;
       continue;
     }
 
@@ -771,6 +871,7 @@ export function sanitizeSystemText(text, rawOptions = {}) {
         out.push(line);
         fence = opener;
         paragraphOpen = false;
+        dedupe.emitted = false;
         continue;
       }
       prose.push(line);
@@ -786,6 +887,7 @@ export function sanitizeSystemText(text, rawOptions = {}) {
         out.push(line);
         fence = opener;
         paragraphOpen = false;
+        dedupe.emitted = false;
         continue;
       }
     }
@@ -796,6 +898,8 @@ export function sanitizeSystemText(text, rawOptions = {}) {
       prose.push(line);
       flush();
       paragraphOpen = false;
+      // 标题开启了新的小节，跨小节的重复不算"连续身份"
+      dedupe.emitted = false;
       continue;
     }
 
@@ -805,7 +909,19 @@ export function sanitizeSystemText(text, rawOptions = {}) {
   }
   flush();
 
-  return out.join("");
+  // 末段被整段丢弃时，回退它前面的空行，避免文末留下悬挂空行
+  if (suppressBlank) {
+    while (out.length > 0) {
+      const last = out[out.length - 1];
+      if (last === "\n" || last === "\r\n") out.pop();
+      else break;
+    }
+  }
+
+  let result = out.join("");
+  // 输入不以换行结尾时，输出也不应带换行（清洗只会删减，不会新增）
+  if (!/[\r\n]$/.test(text)) result = result.replace(/[\r\n]+$/, "");
+  return result;
 }
 
 // ---------------------------------------------------------------------------

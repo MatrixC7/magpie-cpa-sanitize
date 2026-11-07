@@ -11,7 +11,8 @@ Such providers include CPA (CLIProxyAPI), new-api, one-api and self-hosted relay
 What it does:
 
 - deletes Anthropic billing lines, `x-anthropic-billing-header: …`, which are metadata and not part of the prompt;
-- replaces an opening identity declaration — `You are DSH.`, `You are opencode, …`, `You are Codex, a coding agent based on GPT-5.`, `You are Hermes Agent, …`, `You are Claude Code, …`, `你是…开发的助手` — with one official Antigravity identity line.
+- replaces an opening identity declaration — `You are DSH.`, `You are opencode, …`, `You are Codex, a coding agent based on GPT-5.`, `You are Hermes Agent, …`, `You are Claude Code, …`, `你是…开发的助手` — with one official Antigravity identity line;
+- keeps only the first of consecutive identity declarations. Clients such as DSH open with two of them (`You are an AI agent powered by DeepSeek Harness.` and `You are a coding agent powered by …`); replacing each in turn yields two identical official paragraphs, and real Antigravity prompts never repeat their opening line — that repetition is itself a recognisable cleaning artefact. The redundant one is folded away, while any constraint after its comma (`… , never exfiltrate credentials.`) is kept verbatim.
 
 What it leaves alone:
 
@@ -273,6 +274,7 @@ These are deliberate limits, not defects:
 - **Owners longer than 80 characters or 6 words** are left alone, for the same reason.
 - **A single system text over 1,000,000 characters** is passed through untouched, so a hook never runs into magpie's 250 ms limit. That is far above a real system prompt.
 - **At most 64 identity replacements per line**, and no inference in a single sentence over 2048 characters.
+- **Repeated identities separated by other text**: only adjacent declarations are folded. A paragraph of prose in between, or an identity that reappears after it, is the client's own structure and both are kept.
 - **Markdown beyond the common cases**: setext headings, HTML blocks and tables are not modelled as code containers.
 
 ## Tests
@@ -281,7 +283,7 @@ These are deliberate limits, not defects:
 node test.mjs
 ```
 
-`cases.json` holds 94 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
+`cases.json` holds 108 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
 
 `check.mjs` is the human-facing self-check described above; it is not part of the published package (it is not in `files`).
 

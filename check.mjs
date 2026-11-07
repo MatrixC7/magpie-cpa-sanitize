@@ -22,7 +22,8 @@ const sanitize = (text, options) => {
   return runInContext("sanitizeSystemText(__t, __o)", ctx, { timeout: 5000 });
 };
 
-const file = process.argv[2];
+// 只有不以 "-" 开头的参数才当作文件，避免 `--diff` 被误读成文件名
+const file = process.argv.slice(2).find((a) => !a.startsWith("-"));
 const wantDiff = process.argv.includes("--diff");
 
 // 与插件默认值一致；可以用环境变量覆盖
@@ -38,6 +39,7 @@ const samples = file
   ? [["你的提示词", fs.readFileSync(file, "utf8")]]
   : [
       ["DSH 全称", "You are an AI agent powered by DeepSeek Harness.\n\nYou are a coding agent powered by the cli-proxy-api/gemini-4-argon-high model."],
+      ["DSH 连续身份去重", "You are an AI agent powered by DeepSeek Harness.\n\nYou are a coding agent powered by the cli-proxy-api/gemini-4-argon-high model.\n\nCheck the [exit code: N] marker on every bash result."],
       ["DSH 缩写", "You are DSH."],
       ["OpenCode", "You are opencode, an interactive CLI tool that helps users with software engineering tasks."],
       ["Codex", "You are Codex, based on GPT-5. You are running as a coding agent in the Codex CLI."],
@@ -53,6 +55,41 @@ const O = runInContext("OFFICIAL_ANTIGRAVITY_IDENTITY", ctx);
 let changed = 0;
 let unchanged = 0;
 
+/**
+ * 逐行 LCS 差异，返回 ["-",行] / ["+",行] / [" ",行]。
+ * 提示词通常只有几十行，O(n·m) 足够；不追求最小编辑脚本，只要不误导。
+ */
+function lineDiff(a, b) {
+  const n = a.length;
+  const m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const ops = [];
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) {
+      ops.push([" ", a[i]]);
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      ops.push(["-", a[i]]);
+      i++;
+    } else {
+      ops.push(["+", b[j]]);
+      j++;
+    }
+  }
+  while (i < n) ops.push(["-", a[i++]]);
+  while (j < m) ops.push(["+", b[j++]]);
+  // 相同行不必打印，只看改动处
+  return ops.filter(([op]) => op !== " ");
+}
+
 console.log("选项：" + JSON.stringify(options) + "\n");
 
 for (const [name, input] of samples) {
@@ -65,13 +102,10 @@ for (const [name, input] of samples) {
   if (!did) {
     console.log("   " + JSON.stringify(input.length > 100 ? input.slice(0, 97) + "..." : input));
   } else if (wantDiff) {
+    // 逐行 LCS 差异：按索引硬比会在删除行之后全部错位，看不出真正删了哪行
     const a = input.split("\n");
     const b = out.split("\n");
-    for (let i = 0; i < Math.max(a.length, b.length); i++) {
-      if (a[i] === b[i]) continue;
-      if (a[i] !== undefined) console.log("  - " + JSON.stringify(a[i]));
-      if (b[i] !== undefined) console.log("  + " + JSON.stringify(b[i]));
-    }
+    for (const [op, line] of lineDiff(a, b)) console.log("  " + op + " " + JSON.stringify(line));
   } else {
     const short = (s) => (s.length > 100 ? s.slice(0, 97) + "..." : s);
     console.log("   输入: " + JSON.stringify(short(input)));
