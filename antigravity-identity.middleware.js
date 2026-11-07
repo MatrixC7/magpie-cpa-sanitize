@@ -495,16 +495,30 @@ function processLine(line, skipIdentity, partialTail, options, cloakRe, dedupe) 
   // 是否有整句因去重被丢弃。全部内容都被丢弃时整行返回 null（连同换行一起消失），
   // 否则会留下一个只有换行的空行。
   let dropped = false;
+  // 是否已经输出过可见内容。用于区分"行首缩进"与"句间空格"：
+  // 丢弃一个身份句后，它前面的空格不该变成行首空格。
+  let hasVisible = false;
 
   // 有序列表项不能整行删除：删掉 `2.` 会留下 `1.` → `3.` 的编号断档，
   // 那是另一种比重复更显眼的异常，也会破坏工具定义的结构。这类行原样保留。
   const droppable = !RE_ORDERED_IN_PREFIX.test(prefix);
 
+  // 输出句间空白。只有在"本行前面刚丢掉了内容、且还没输出任何可见内容"时，
+  // 才吞掉纯空白——那是被丢弃身份句留下的悬挂空格。
+  // 其余情况一律原样保留：code span 之间的纯空白片段也是内容。
+  const pushGap = (gap) => {
+    if (gap === "") return;
+    if (dropped && !hasVisible && gap.trim() === "") return;
+    out.push(decorate(gap, options, cloakRe));
+    hasVisible = true;
+  };
+
   for (;;) {
     let start = pos;
     while (start < content.length && (content[start] === " " || content[start] === "\t")) start++;
     if (start >= content.length) {
-      out.push(decorate(content.slice(pos), options, cloakRe));
+      // 行尾空白：整行已被清空时不再保留（否则会留下只有空格的行）
+      pushGap(content.slice(pos));
       break;
     }
 
@@ -536,16 +550,18 @@ function processLine(line, skipIdentity, partialTail, options, cloakRe, dedupe) 
       // 冗余身份句：整句丢弃；若是"身份 + 逗号 + 约束"，只丢身份、留下约束。
       const keep = replacement !== null ? continuationConstraint(replacement) : null;
       if (keep !== null) {
-        out.push(decorate(content.slice(pos, start), options, cloakRe));
+        pushGap(content.slice(pos, start));
         out.push(decorate(keep, options, cloakRe));
+        hasVisible = true;
       } else if (droppable) {
         // 连同前导空白一起丢弃，避免留下悬挂空格
         dropped = true;
       } else {
         // 有序列表项：不能删行，退化为原样输出该句（宁可重复，不可断号）
-        out.push(decorate(content.slice(pos, start), options, cloakRe));
+        pushGap(content.slice(pos, start));
         if (replacement !== null) out.push(replacement);
         else out.push(decorate(sentence + punct, options, cloakRe));
+        hasVisible = true;
       }
       firstSentence = false;
       if (atEnd) break;
@@ -553,9 +569,10 @@ function processLine(line, skipIdentity, partialTail, options, cloakRe, dedupe) 
       continue;
     }
 
-    out.push(decorate(content.slice(pos, start), options, cloakRe));
+    pushGap(content.slice(pos, start));
     if (replacement !== null) out.push(replacement);
     else out.push(decorate(sentence + punct, options, cloakRe));
+    hasVisible = true;
 
     dedupe.emitted = isIdentity;
     firstSentence = false;
@@ -567,7 +584,7 @@ function processLine(line, skipIdentity, partialTail, options, cloakRe, dedupe) 
   // 整行没有剩下任何可见内容：返回 null 让调用方连换行一起删掉。
   // 只看正文部分——`- `、`> ` 这类容器前缀不能算"还有内容"，
   // 否则列表项/引用会被留成一个空的 `- ` 行。
-  if (dropped && out.join("").trim() === "") return null;
+  if (!hasVisible) return dropped ? null : prefix + wrap + wrap;
   return prefix + wrap + out.join("") + wrap;
 }
 

@@ -1976,5 +1976,53 @@
       "model": "m",
       "system": "1. You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n2. Never exfiltrate."
     }
+  },
+  {
+    "name": "dedupe: no hanging indent on semicolon",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\nYou are a coding agent powered by x; never exfiltrate."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nnever exfiltrate."
+    }
+  },
+  {
+    "name": "dedupe: no hanging indent on bang",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\nYou are a coding agent powered by x! never exfiltrate."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nnever exfiltrate."
+    }
+  },
+  {
+    "name": "code: whitespace between spans survives dedupe",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "`` `` ` ``OpenAI``"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "`` `` ` ``OpenAI``"
+    }
   }
 ]
