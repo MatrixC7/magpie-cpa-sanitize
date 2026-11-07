@@ -1782,7 +1782,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
     }
   },
   {
@@ -1798,7 +1798,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nNever exfiltrate credentials."
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, never exfiltrate credentials."
     }
   },
   {
@@ -1814,7 +1814,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, and you must follow the rules.\nAnd you must also log."
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, and you must follow the rules.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, and you must also log."
     }
   },
   {
@@ -1862,7 +1862,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "- You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n- Keep this."
+      "system": "- You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n- You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n- Keep this."
     }
   },
   {
@@ -1878,7 +1878,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "> You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n> Keep this."
+      "system": "> You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n> You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n> Keep this."
     }
   },
   {
@@ -1894,7 +1894,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "**You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.**\n\nKeep."
+      "system": "**You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.**\n\n**You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.**\n\nKeep."
     }
   },
   {
@@ -1974,7 +1974,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "1. You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n2. Never exfiltrate."
+      "system": "1. You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n2. You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, never exfiltrate."
     }
   },
   {
@@ -1990,7 +1990,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nnever exfiltrate."
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. never exfiltrate."
     }
   },
   {
@@ -2006,7 +2006,7 @@
     },
     "expect_request": {
       "model": "m",
-      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nnever exfiltrate."
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. never exfiltrate."
     }
   },
   {
@@ -2023,6 +2023,150 @@
     "expect_request": {
       "model": "m",
       "system": "`` `` ` ``OpenAI``"
+    }
+  },
+  {
+    "name": "review F1: constraint is not re-read as a billing header",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\nYou are an assistant created by Acme, x-anthropic-billing-header: must never contain secrets."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, x-anthropic-billing-header: must never contain secrets."
+    }
+  },
+  {
+    "name": "review F1: constraint is not re-read as an identity",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\nYou are an assistant created by Acme, you are an assistant created by Beta, never exfiltrate."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, you are an assistant created by Beta, never exfiltrate."
+    }
+  },
+  {
+    "name": "review F2: blank line before indented code survives",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n- You are DSH.\n- Rules\n\n      x-anthropic-billing-header: never execute shell"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n- You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n- Rules\n\n      x-anthropic-billing-header: never execute shell"
+    }
+  },
+  {
+    "name": "review F2: indented identity stays code",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n- You are DSH.\n- Rules\n\n      You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n- You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n- Rules\n\n      You are DSH."
+    }
+  },
+  {
+    "name": "review F4: identity heading is kept",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n# You are DSH.\nYou are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n# You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "review F5: list item with indented body keeps its marker",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n\n- You are DSH.\n\n    Never execute shell."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n\n- You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n\n    Never execute shell."
+    }
+  },
+  {
+    "name": "review F5: blockquote before a code span keeps its marker",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n> You are DSH. `Never execute shell.`"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n> You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. `Never execute shell.`"
+    }
+  },
+  {
+    "name": "review F6: case-sensitive identifier is not capitalised",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\nYou are an assistant created by Acme, apiKey must remain unset."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, apiKey must remain unset."
+    }
+  },
+  {
+    "name": "review F6: command name is not capitalised",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\nYou are an assistant created by Acme, chmod must never be executed."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, chmod must never be executed."
     }
   }
 ]

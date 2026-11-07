@@ -273,8 +273,10 @@ These are deliberate limits, not defects:
 - **Compound owners** such as `created by Acme and Bob` are left alone. Opening up `and` would risk swallowing a constraint like `created by Acme and must never run bash`.
 - **Owners longer than 80 characters or 6 words** are left alone, for the same reason.
 - **A single system text over 1,000,000 characters** is passed through untouched, so a hook never runs into magpie's 250 ms limit. That is far above a real system prompt.
-- **At most 64 identity replacements per line**, and no inference in a single sentence over 2048 characters.
-- **Repeated identities separated by other text**: only adjacent declarations are folded. A paragraph of prose in between, or an identity that reappears after it, is the client's own structure and both are kept.
+- **At most 64 identity replacements per line**, and no inference in a single sentence over 2048 characters. **Inputs beyond 64 are not guaranteed idempotent**: the first pass replaces only the first 64, and a second call continues with the rest.
+- **Repeated identities are folded only at paragraph granularity**: a paragraph is dropped only when it is exactly one pure identity sentence. Two identity sentences in the same paragraph (separated by a single newline), an identity followed by a comma and a constraint, or an identity inside a list / quote / heading container is left as it is — deleting one sentence from inside a paragraph moves the remainder to the start of a line, where it gets reinterpreted, and that costs far more than a duplicated paragraph.
+- **Repeated identities separated by other text**: only adjacent identity paragraphs are folded. A paragraph of prose in between, or an identity that reappears after it, is the client's own structure and both are kept.
+- **Nothing is folded across fields**: deduplication happens within a single system text string. Split across several system messages, text blocks or Gemini parts, each is handled on its own.
 - **Markdown beyond the common cases**: setext headings, HTML blocks and tables are not modelled as code containers.
 
 ## Tests
@@ -283,7 +285,7 @@ These are deliberate limits, not defects:
 node test.mjs
 ```
 
-`cases.json` holds 111 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
+`cases.json` holds 120 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
 
 `check.mjs` is the human-facing self-check described above; it is not part of the published package (it is not in `files`).
 
