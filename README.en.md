@@ -25,14 +25,45 @@ It needs a magpie with the `onProvider` hook (v0.1.1283 or later): an older magp
 ## Install
 
 ```sh
-magpie plugin add github:MatrixC7/magpie-antigravity-identity
+magpie plugin add github:MatrixC7/magpie-middleware-antigravity-identity
 ```
 
-Then put your provider's id in the options — the default is `cli-proxy-api`; another reverse proxy takes its own id:
+### Set the options
+
+**The options must be set once after installing, or the plugin loads but never acts.** magpie's `ctx.options` starts as an empty object `{}`; only what `plugins.json` holds is handed to the middleware. The `magpie.options` in `package.json` is merely what the GUI's options editor **starts from**, not a runtime default.
+
+Open the plugin's options editor on the GUI's Plugins page and it shows a skeleton like this:
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "accounts": [],
+  "sanitizeBrands": false,
+  "cloakFallbackWords": [],
+  "off": false
+}
+```
+
+Change it for your setup and **save**. Most often that means `providers` (your provider's id) and adding `models` (which models to handle):
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "accounts": [],
+  "models": ["gemini-3.8-flash-high", "gemini-4-argon-high"],
+  "sanitizeBrands": false,
+  "cloakFallbackWords": [],
+  "off": false
+}
+```
+
+Or set it in one go from the command line:
 
 ```sh
-magpie plugin options magpie-antigravity-identity '{"providers":["<your provider id>"]}'
+magpie plugin options magpie-middleware-antigravity-identity '{"providers":["<your provider id>"],"models":["<model name>"]}'
 ```
+
+⚠️ **Never write `"models": []`** — an empty array means "no model matches", which disables the whole middleware. Either leave the field out entirely (every model is handled), or list concrete model names.
 
 Restart magpie and check it is running on the GUI's Plugins page (see "Is it working?").
 

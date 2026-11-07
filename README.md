@@ -25,14 +25,45 @@ DSH（DeepSeek Harness）、OpenCode、Claude Code、Codex 这类客户端会把
 ## 安装
 
 ```sh
-magpie plugin add github:MatrixC7/magpie-antigravity-identity
+magpie plugin add github:MatrixC7/magpie-middleware-antigravity-identity
 ```
 
-然后把你的供应商 id 填进选项——默认是 `cli-proxy-api`，用别的反代就改成它的 id：
+### 设置选项
+
+**安装后必须设置一次选项，否则插件虽然加载但不会生效。** magpie 的 `ctx.options` 初始是空对象 `{}`，只有 `plugins.json` 里存了值才会传给中间件；`package.json` 里的 `magpie.options` 只是 GUI 编辑器的**预填示例**，不是运行时默认值。
+
+在 GUI 的 Plugins 页面点开该插件的选项编辑器，会看到这样一份结构示例：
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "accounts": [],
+  "sanitizeBrands": false,
+  "cloakFallbackWords": [],
+  "off": false
+}
+```
+
+按你的实际情况修改后**保存**。最常见的是改 `providers`（你的供应商 id）和加上 `models`（只清洗哪些模型）：
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "accounts": [],
+  "models": ["gemini-3.8-flash-high", "gemini-4-argon-high"],
+  "sanitizeBrands": false,
+  "cloakFallbackWords": [],
+  "off": false
+}
+```
+
+也可以用命令行一次设置：
 
 ```sh
-magpie plugin options magpie-antigravity-identity '{"providers":["<你的供应商 id>"]}'
+magpie plugin options magpie-middleware-antigravity-identity '{"providers":["<你的供应商 id>"],"models":["<模型名>"]}'
 ```
+
+⚠️ **不要写 `"models": []`**——空数组表示「没有任何模型匹配」，会让整个中间件失效。要么完全不写这个字段（所有模型都处理），要么写具体模型名。
 
 改完重启 magpie，用 GUI 的 Plugins 页面确认它在跑（见「怎么确认它在工作」）。
 
