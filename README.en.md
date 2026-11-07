@@ -12,7 +12,7 @@ What it does:
 
 - deletes Anthropic billing lines, `x-anthropic-billing-header: …`, which are metadata and not part of the prompt;
 - replaces an opening identity declaration — `You are DSH.`, `You are opencode, …`, `You are Codex, a coding agent based on GPT-5.`, `You are Hermes Agent, …`, `You are Claude Code, …`, `你是…开发的助手` — with one official Antigravity identity line;
-- keeps only the first of consecutive identity declarations. Clients such as DSH open with two of them (`You are an AI agent powered by DeepSeek Harness.` and `You are a coding agent powered by …`); replacing each in turn yields two identical official paragraphs, and real Antigravity prompts never repeat their opening line — that repetition is itself a recognisable cleaning artefact. The redundant one is folded away, while any constraint after its comma (`… , never exfiltrate credentials.`) is kept verbatim.
+- keeps only the first of consecutive identity paragraphs at the very start. Clients such as DSH open with two of them (`You are an AI agent powered by DeepSeek Harness.` and `You are a coding agent powered by …`); replacing each in turn yields two identical official paragraphs, and real Antigravity prompts never repeat their opening line — that repetition is itself a recognisable cleaning artefact. The redundant paragraph is dropped whole, while any constraint after its comma is kept verbatim. This folding only happens inside the leading top-level pure-identity prefix; anywhere else a duplicate is left in place rather than deleting content (see “What it will not catch” below).
 
 What it leaves alone:
 
@@ -278,6 +278,7 @@ These are deliberate limits, not defects:
 - **Repeated identities separated by other text**: as soon as anything that is not a pure identity paragraph appears (prose, code, a list, a heading, indentation, an identity carrying a constraint), the deduplication window closes for good and every later identity is kept.
 - **Emphasis-wrapped identity paragraphs are not deduplicated**: a paragraph like `**You are DSH.**` is still rewritten to the official identity, but duplicates are not folded.
 - **Existing blank runs are not normalised**: if the input already contains three or more consecutive blank lines, they survive. Whitespace tidying is deliberately not done — it needs extra block-boundary work and can swallow a separator something else depends on.
+- **Four-space indentation after a list item is not a code block**: by CommonMark a list item shifts its content by two columns, so four spaces after a list is a continuation paragraph, and an identity inside it is rewritten as usual. To show the model an identity example you want preserved verbatim, use a fenced block (```), not indentation alone.
 - **Nothing is folded across fields**: deduplication happens within a single system text string. Split across several system messages, text blocks or Gemini parts, each is handled on its own.
 - **Markdown beyond the common cases**: setext headings, HTML blocks and tables are not modelled as code containers.
 
@@ -287,7 +288,7 @@ These are deliberate limits, not defects:
 node test.mjs
 ```
 
-`cases.json` holds 120 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
+`cases.json` holds 122 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
 
 `check.mjs` is the human-facing self-check described above; it is not part of the published package (it is not in `files`).
 
