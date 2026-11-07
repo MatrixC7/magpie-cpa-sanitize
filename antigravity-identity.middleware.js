@@ -34,12 +34,14 @@ const ZWSP = "\u200b";
 // ---------------------------------------------------------------------------
 // 预算常量
 //
-// 目标是任何输入下都不让 onProvider 接近宿主 250ms 硬上限。
-// 实测最坏形态是"大量短行、每行都进入身份扫描"：100 万字符约 31ms，
-// 故取 1M 作为单段上限，为 250ms 留出约 8 倍余量。
+// 目标是让 onProvider 尽量远离宿主 250ms 硬上限，但这里**不承诺**任何
+// 时间上限：本仓库没有 moejs 宿主可测，Node/V8 的实测值不能代表其它引擎。
+// 实测参考（Node v24.21.0）：最慢的常规形态是"大量极短行"，100 万字符
+// 约 130–170ms；独立身份段约 40ms。多字段请求的总成本还会叠加。
+// 因此 1M 只是**单字段**上限，不等于整次 hook 的时间保证。
 // ---------------------------------------------------------------------------
 
-/** 超过此长度的输入整篇原样返回（fail-open）。 */
+/** 超过此长度的单段文本原样返回（fail-open）。 */
 const MAX_TEXT_LENGTH = 1000000;
 /** 单行内身份替换次数上限，超出部分原样保留。 */
 const MAX_IDENTITY_REPLACEMENTS = 64;
@@ -337,8 +339,11 @@ function isOfficialIdentity(sentence, punct) {
  * 二次解释，也会改变后续缩进代码的块类型（见评审 F1/F2/F4/F5）。
  * 整段丢弃只影响段落之间的空行数量，不改变任何一行内部的结构。
  *
- * 判定基于**原始文本**：已是官方身份的段落同样返回 true，因此二次处理
- * 得到相同结论，幂等性由判定本身保证，不依赖清洗结果。
+ * 注意：调用方传入的是**清洗后**的段落文本（见 flush 内的说明），
+ * 不是原始文本。用原始文本判定会破坏幂等。
+ *
+ * 另外，本函数只回答"这一段是不是纯身份"，不回答"能不能删"。
+ * 能否删除还取决于调用方的文首前缀窗口（prefixOpen）。
  *
  * @param {string} paragraph 一个完整段落（可含结尾空白）
  * @param {object} options 中间件选项
@@ -610,7 +615,9 @@ function sanitizeParagraph(text, options, cloakRe) {
     const span = spans[i];
     out.push(sanitizeFragment(text.slice(at, span.start), options, cloakRe, afterCode, true));
     out.push(text.slice(span.start, span.end));
-    // code span 是实体内容，不算身份句，也不打断已有身份链
+    // code span 是实体内容，逐字保留。
+    // 段落级去重只发生在整段恰好是纯身份时，而含 code span 的段落不会
+    // 满足那个条件，所以这里不需要额外的状态处理。
     at = span.end;
     afterCode = true;
   }
@@ -763,10 +770,21 @@ export function sanitizeSystemText(text, rawOptions = {}) {
   let itemIndent = 0;
   let paragraphOpen = false;
 
-  // 连续身份去重：只在段落粒度做。`identityEmitted` 表示紧邻的上文已经是一段身份；
-  // 此时若本段整段都是纯身份，就整段丢弃（连它后面的空行一起）。
-  // 判定基于**清洗后**的段落文本，理由见 flush 内的注释。
-  let identityEmitted = false;
+  // -------------------------------------------------------------------------
+  // 连续身份去重：只在「文首的顶层纯身份前缀」范围内生效。
+  //
+  // 去重必须比"任意位置整段删除"更窄，因为删除一个段落会改变后续行的
+  // 容器上下文（`itemIndent` 是否已被重置），使缩进代码在第二次处理时
+  // 退化成散文，从而被 billing 规则或身份规则改写（评审 R1）。
+  // 同理，一段里如果还夹着 billing 头这类会被删掉的行，删除后段落边界
+  // 与第一遍不同，两遍决策就会不一致（评审 R2）。
+  //
+  // 因此：只有在**还没有输出过任何内容**（prefixOpen）时，才允许折叠
+  // 顶层的纯身份段落；一旦遇到任何非纯身份的内容，窗口永久关闭。
+  // 真实 DSH 的两句身份正好位于文首，仍然会被折叠。
+  // -------------------------------------------------------------------------
+  let prefixOpen = true;   // 文首窗口是否仍然打开
+  let identityEmitted = false; // 窗口内是否已经输出过一段身份
   let suppressBlank = false;
 
   const flush = () => {
@@ -786,15 +804,16 @@ export function sanitizeSystemText(text, rawOptions = {}) {
     // 于是第一遍没折叠、第二遍折叠，幂等性被破坏。
     const pure = isPureIdentityParagraph(text, options);
 
-    // 整段都是身份、且上文已经产出过身份：整段丢弃。
-    // 删的是**整段**，不删段内任何一句，所以不会让残余内容挪到行首
-    // 被二次解释，也不会改变后续块的结构。
-    if (identityEmitted && pure) {
+    if (prefixOpen && pure && identityEmitted) {
+      // 窗口内的冗余身份段：整段丢弃。删的是**整段**，不删段内任何一句。
       suppressBlank = true;
       return;
     }
 
-    identityEmitted = pure;
+    // 任何非纯身份内容都会永久关闭窗口——之后不再折叠任何段落。
+    if (!pure) prefixOpen = false;
+    else if (prefixOpen) identityEmitted = true;
+
     out.push(text);
     suppressBlank = false;
   };
@@ -823,7 +842,7 @@ export function sanitizeSystemText(text, rawOptions = {}) {
       out.push(line);
       if (effIndent <= 3 && fenceCloser(body.slice(info.contentStart), fence)) fence = null;
       paragraphOpen = false;
-      identityEmitted = false;
+      prefixOpen = false;
       suppressBlank = false;
       continue;
     }
@@ -847,7 +866,7 @@ export function sanitizeSystemText(text, rawOptions = {}) {
     if (effIndent >= 4 && !paragraphOpen) {
       flush();
       out.push(line);
-      identityEmitted = false;
+      prefixOpen = false;
       continue;
     }
 
@@ -861,7 +880,7 @@ export function sanitizeSystemText(text, rawOptions = {}) {
         out.push(line);
         fence = opener;
         paragraphOpen = false;
-        identityEmitted = false;
+        prefixOpen = false;
         continue;
       }
       prose.push(line);
@@ -877,7 +896,7 @@ export function sanitizeSystemText(text, rawOptions = {}) {
         out.push(line);
         fence = opener;
         paragraphOpen = false;
-        identityEmitted = false;
+        prefixOpen = false;
         continue;
       }
     }
@@ -888,8 +907,8 @@ export function sanitizeSystemText(text, rawOptions = {}) {
       prose.push(line);
       flush();
       paragraphOpen = false;
-      // 标题开启了新的小节，跨小节的重复不算"连续身份"
-      identityEmitted = false;
+      // 标题开启了新的小节，其后的内容不属于文首前缀
+      prefixOpen = false;
       continue;
     }
 
