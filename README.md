@@ -283,7 +283,7 @@ Model string `json:"model"` // what magpie sends the vendor
 node test.mjs
 ```
 
-`cases.json` 含 108 个用例：每个给出一个请求、它到达时的供应商与协议，以及必须发送出去的 body。没有 `expect_request` 的用例必须原样返回。运行器复现了 magpie 的契约——被修改的 body 必须以对象返回，而 `undefined` 表示「发送原始内容」。
+`cases.json` 含 111 个用例：每个给出一个请求、它到达时的供应商与协议，以及必须发送出去的 body。没有 `expect_request` 的用例必须原样返回。运行器复现了 magpie 的契约——被修改的 body 必须以对象返回，而 `undefined` 表示「发送原始内容」。
 
 `check.mjs` 是给人看的自检工具，见上文「怎么确认它在工作」。它不参与发布（不在 `package.json` 的 `files` 里）。
 

@@ -283,7 +283,7 @@ These are deliberate limits, not defects:
 node test.mjs
 ```
 
-`cases.json` holds 108 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
+`cases.json` holds 111 cases: each gives a request, the provider and protocol it arrives on, and the body that must be sent. A case with no `expect_request` must come back unchanged. The runner reproduces magpie's contract — a changed body must be returned as an object, and `undefined` means "send the original".
 
 `check.mjs` is the human-facing self-check described above; it is not part of the published package (it is not in `files`).
 
