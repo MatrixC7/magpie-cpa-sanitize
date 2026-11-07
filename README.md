@@ -30,9 +30,9 @@ magpie 内置的 cloak 只对 `antigravity` 账号生效，而 CPA 是以 API ke
 
 ## 怎么确认它在工作
 
-三步，由浅入深。
+分两层：**文本层**（它会把提示词改成什么样）和**调用层**（magpie 有没有真的在跑它）。
 
-### 1. 安装前：它会把你的提示词改成什么样
+### 1. 安装前：看文本层结果
 
 ```sh
 node check.mjs
@@ -45,39 +45,131 @@ node check.mjs prompt.txt          # 显示改动前后
 node check.mjs prompt.txt --diff   # 只显示有变化的行
 ```
 
-只读本地文件。它告诉你**文本层的结果**，但不证明 magpie 真的在调用它。
+只读本地文件，不联网、不碰账号。它告诉你**清洗结果对不对**，但不能证明 magpie 在调用它。
 
-### 2. 安装后：magpie 到底有没有调用它
+### 2. 安装后：看调用层——只能用 GUI
 
-```sh
-magpie plugin list --json
+**打开 magpie 的 Plugins 页面，找到这个插件的卡片。** 卡片上会显示：
+
+```
+21 calls, 10891 µs each
 ```
 
-在 `middleware` 段里，按插件的 spec 找到对应项：
+有失败时还会显示失败次数。
 
-| 字段 | 期望值 |
+**为什么不能用命令行？** `magpie plugin list --json` 里的 `calls` / `avgMicros` / `failures` **永远是 0**。这不是 bug：这些计数存在**网关进程的内存**里（Go 的 `atomic.Int64`），而每次执行 `magpie` 命令都会启动一个**新进程**，新进程从没跑过任何 hook，读到的自然是 0。GUI 由网关进程自己提供，所以能看到真实值。
+
+同理，重启 magpie 后计数会归零——计数不持久化。
+
+### 3. 怎么读这两个数字
+
+| 现象 | 含义 |
 |---|---|
-| `hooks` | `["onProvider"]`——它注册的钩子 |
-| `error` | 不存在；有值说明没加载成功 |
-| `calls` | 每有一个请求经过网关就增长 |
-| `avgMicros` | 每次调用的平均耗时，单位微秒 |
-| `failures` | 应保持 0 |
+| 卡片上 `calls` 一直是 0 | 钩子加载了但从未执行。检查插件是否被关闭、`off` 是否为 `true` |
+| `calls` 增长，但 `µs each` 极低（< 10 µs） | 钩子执行了，但被 `shouldRun` 挡在门外直接返回。几乎总是 `providers` / `models` 没匹配上 |
+| `calls` 增长，`µs each` 是几十到几百 µs | 真的在解析和改写文本 |
 
-GUI 的 Plugins 页面在插件卡片上显示同样的内容：`N calls, X µs each`，有失败时还会显示失败次数。
+参考量级：一份 400K 上下文的请求，单次约 **10 ms**（10,000 µs）属于正常——耗时主要花在 JSON 解析和逐行扫描上。
 
-**`calls` 一直是 0、而你确实在发请求——这才是关键信号。** 它说明钩子加载了但 `shouldRun` 从未命中，几乎总是因为供应商 id 和 `providers` 里的不一致。
-
-### 3. 安装后：供应商 id 对不对
+### 4. 安装后：供应商 id 和模型名对不对
 
 ```sh
-magpie provider list
+magpie providers                  # 列出所有供应商及其 id
+magpie provider cli-proxy-api     # 看某一个供应商的模型列表
 ```
 
-把你 CPA 供应商的 id 和选项里的 `providers` 对比。若不一致，中间件会加载但永不被调用——请求毫无变化，也不报任何错。改成真实 id：
+把你 CPA 供应商的 id 和选项里的 `providers` 对比。若不一致，中间件会加载但永不被调用——请求毫无变化，也不报任何错。
+
+模型名的确认见下一节「只对 antigravity 的模型生效」。
+
+## 只对 antigravity 的模型生效
+
+CPA 通常同时代理多个来源：antigravity 反代、Codex、以及各种第三方公益站。默认情况下中间件会对**所有**经该 CPA 供应商发出的请求生效，这可能不是你想要的。
+
+**magpie 无法知道 CPA 内部把请求路由给了谁。** `onProvider` 收到的 `ctx.provider` 只有 `id` / `name` / `account` / `model` 四个字段；对 magpie 而言 CPA 只是一个 HTTP 端点。CPA 的 `/v1/models` 也只返回模型名，不带来源标注。
+
+但模型名是唯一可靠且可见的信号，所以用 `models` 白名单来限定：
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "models": ["gemini-3.8-flash-high", "gemini-4-argon-high"]
+}
+```
+
+### 怎么找出 antigravity 的模型名
+
+先看供应商有哪些模型：
 
 ```sh
-magpie plugin options <插件名> '{"providers":["<你的供应商 id>"]}'
+magpie provider cli-proxy-api
 ```
+
+输出形如：
+
+```
+  CPA  cli-proxy-api  custom
+  chat      http://127.0.0.1:8317/v1
+  models    7 exposed of 7 from 127.0.0.1:8317 · fetched 6h ago
+            cli-proxy-api/gpt-6-luna  GPT-6 Luna
+            cli-proxy-api/gemini-3.8-flash-high  Gemini 3.8 Flash
+            cli-proxy-api/gemini-4-argon-high  Gemini 4 Argon
+            cli-proxy-api/claude-opus-5-5-high  Claude Opus 5.5
+            …
+```
+
+挑出由 antigravity 反代提供的那几个。
+
+如果 CPA 配置文件里有 `excluded-models.antigravity`，那里列的是**被排除**的模型；不在列表里的通常就是 antigravity 提供的。
+
+### 注意：填的模型名不带供应商前缀
+
+上面列出的 `cli-proxy-api/gemini-3.8-flash-high` 是 magpie 的**完整模型 id**（供应商 id + 斜杠 + 模型名）。但中间件收到的 `ctx.provider.model` 是**斜杠之后的裸模型名**：
+
+| 位置 | 值 |
+|---|---|
+| `magpie provider cli-proxy-api` 显示 | `cli-proxy-api/gemini-3.8-flash-high` |
+| 中间件看到的 `ctx.provider.model` | `gemini-3.8-flash-high` |
+
+所以 `models` 里要填**裸模型名**，不要加 `cli-proxy-api/` 前缀。
+
+magpie 源码里这两个是不同的字段（`provider.Entry`）：
+
+```go
+ID    string `json:"id"`    // what the agent sends magpie
+Model string `json:"model"` // what magpie sends the vendor
+```
+
+`provider.Resolve` 返回的是后者。
+
+### 注意：不是客户端写的别名
+
+`models` 匹配的是 magpie 解析后发给供应商的模型名，不是客户端请求里写的别名。如果你的客户端用 `group/flash` 这样的路由别名，而供应商实际收到 `gemini-3.8-flash-high`，那要填**后者**。
+
+### 注意：`models: []` 会禁用整个中间件
+
+这是最容易踩的坑：
+
+| 配置 | 行为 |
+|---|---|
+| 不写 `models` 字段 | 所有模型都处理 |
+| `"models": []` | **全部不处理**（空数组表示"没有任何模型匹配"） |
+| `"models": ["x"]` | 只有 `x` 处理 |
+
+所以要么**完全不写**这个字段，要么写具体模型名。不要留一个空数组。
+
+### 建议：只填你真正在用的模型
+
+不必把 antigravity 的模型全部列出来。只填你实际会经 CPA 发送、且存在身份泄漏风险的那几个即可：
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "models": ["gemini-4-argon-high"]
+}
+```
+
+其余模型（Codex、DeepSeek 等）不经过清洗——它们本来也不是 antigravity 反代的，不需要处理。
 
 ## 选项
 
@@ -94,10 +186,36 @@ magpie plugin options <插件名> '{"providers":["<你的供应商 id>"]}'
 
 - `providers`：它作用的供应商 id。默认为 `["cli-proxy-api"]`，即 CPA 供应商在 magpie 中通常使用的 id。
 - `accounts`：它作用的订阅类型，针对直接登录的供应商。默认为空：CPA 供应商按 id 匹配。设为 `["antigravity"]` 可同时作用于直连的 Antigravity 账号。
-- `models`：精确的模型白名单。缺省或为空表示所有模型。
+- `models`：精确的模型白名单，见下方「筛选顺序」和「只对 antigravity 的模型生效」。**不要留空数组**——空数组会让整个中间件失效。
 - `sanitizeBrands`：同时把竞品厂牌词替换为 `Google`。默认关闭，因为它是有损的——它会连散文中的 API 名称、主机名和模型 id 一起改写。
 - `cloakFallbackWords`：额外的词，用零宽空格（U+200B）拆开而不是替换。默认为空。
 - `off`：所有请求原样发出。
+
+### 筛选顺序
+
+三个筛选条件不是平级的，判断顺序如下：
+
+```
+1. off === true？                    → 是则跳过
+2. providers 或 accounts 命中？       → 都不命中则跳过
+3. models 命中？                      → 不命中则跳过
+4. 处理
+```
+
+具体来说：
+
+- **`providers` 与 `accounts` 是「或」的关系**：供应商 id 命中，或账号类型命中，任一满足即可。这是为了同时支持「按 id 匹配的 API key 供应商」和「按账号类型匹配的直连订阅」两种接入方式。
+- **`models` 是「与」的关系**：只有前一步已经命中，才会再检查模型白名单。
+- **`models` 缺省 = 不过滤**；`models: []` = 全部不匹配。
+
+举例：
+
+| providers | accounts | models | 结果 |
+|---|---|---|---|
+| `["cli-proxy-api"]` | `[]` | 缺省 | CPA 供应商的所有模型都处理 |
+| `["cli-proxy-api"]` | `[]` | `["gemini-3-flash"]` | 只有该模型处理 |
+| `["cli-proxy-api"]` | `["antigravity"]` | 缺省 | CPA 供应商 **或** 直连 antigravity 账号都处理 |
+| `[]` | `[]` | 缺省 | 完全不生效 |
 
 `providers` 与 `accounts` 同时为空时，中间件完全不生效。
 

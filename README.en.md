@@ -30,54 +30,146 @@ It needs a magpie with the `onProvider` hook (v0.1.1283 or later): an older magp
 
 ## Is it working?
 
-Three checks, from cheapest to most conclusive.
+Two layers: the **text** (what it would do to a prompt) and the **calls** (whether magpie is running it at all).
 
-### 1. Before installing: what it would do to your prompt
+### 1. Before installing: the text result
 
 ```sh
 node check.mjs
 ```
 
-Runs the middleware over a set of sample prompts and shows each input and output. With your own text:
+Runs the middleware over a set of sample prompts and prints each input and output. With your own text:
 
 ```sh
 node check.mjs prompt.txt          # show before/after
 node check.mjs prompt.txt --diff   # show only the changed lines
 ```
 
-This reads a local file only. It tells you what the text-level result is; it does not prove magpie is calling it.
+Reads a local file only; no network, no account. It tells you whether the text-level result is right, but it does not prove magpie is calling it.
 
-### 2. After installing: is magpie calling it?
+### 2. After installing: the calls — GUI only
 
-```sh
-magpie plugin list --json
+**Open magpie's Plugins page and find this plugin's card.** It shows:
+
+```
+21 calls, 10891 µs each
 ```
 
-Under `middleware`, keyed by the plugin's spec, look for:
+plus a failure count when there are any.
 
-| Field | What to expect |
+**Why not the command line?** `calls` / `avgMicros` / `failures` in `magpie plugin list --json` are **always 0**. This is not a bug: the counters live in the **gateway process's memory** (Go `atomic.Int64`), and every `magpie` command starts a **new process** that has never run a hook, so it reads 0. The GUI is served by the gateway process itself, so it sees the real values.
+
+For the same reason the counters reset when magpie restarts — they are not persisted.
+
+### 3. Reading those two numbers
+
+| What you see | What it means |
 |---|---|
-| `hooks` | `["onProvider"]` — the hook it registered |
-| `error` | absent; a value here means it did not load |
-| `calls` | rises with each request sent through the gateway |
-| `avgMicros` | average time per call, in microseconds |
-| `failures` | should stay 0 |
+| `calls` stays at 0 | The hook loaded but never ran. Check the plugin is not off and `off` is not `true` |
+| `calls` grows, but `µs each` is tiny (< 10 µs) | The hook ran but `shouldRun` returned early. Almost always `providers` / `models` did not match |
+| `calls` grows, `µs each` is tens to hundreds of µs | It is really parsing and rewriting text |
 
-The GUI shows the same thing on the Plugins page, on the plugin's card: `N calls, X µs each`, plus a failure count when there are any.
+For scale: a request with a ~400K context taking about **10 ms** (10,000 µs) is normal — the time goes into JSON parsing and the line scan.
 
-**`calls` staying at 0 while you are sending requests is the signal that matters.** It means the hook is loaded but `shouldRun` never matched — almost always because the provider id is not the one in `providers`.
-
-### 3. After installing: is the provider id right?
+### 4. After installing: is the provider id and model name right?
 
 ```sh
-magpie provider list
+magpie providers                  # every provider and its id
+magpie provider cli-proxy-api     # one provider's model list
 ```
 
-Compare the id of your CPA provider against `providers` in the options. If they differ, the middleware loads and is never called; nothing in the request changes and no error is reported. Set the real id:
+Compare your CPA provider's id against `providers` in the options. If they differ, the middleware loads and is never called: nothing in the request changes and no error is reported.
+
+Model names are covered in the next section.
+
+## Only for models served by Antigravity
+
+CPA usually proxies several sources at once: Antigravity, Codex, and various third-party endpoints. By default this middleware acts on **every** request through that CPA provider, which may not be what you want.
+
+**magpie cannot know who CPA routed the request to internally.** `ctx.provider` carries only `id` / `name` / `account` / `model`; to magpie, CPA is just an HTTP endpoint. CPA's `/v1/models` returns names only, without provenance.
+
+The model name is the one reliable, visible signal, so limit with the `models` allowlist:
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "models": ["gemini-3.8-flash-high", "gemini-4-argon-high"]
+}
+```
+
+### Finding the Antigravity model names
+
+First, see the models a provider exposes:
 
 ```sh
-magpie plugin options <plugin> '{"providers":["<your provider id>"]}'
+magpie provider cli-proxy-api
 ```
+
+Its output looks like:
+
+```
+  CPA  cli-proxy-api  custom
+  chat      http://127.0.0.1:8317/v1
+  models    7 exposed of 7 from 127.0.0.1:8317 · fetched 6h ago
+            cli-proxy-api/gpt-6-luna  GPT-6 Luna
+            cli-proxy-api/gemini-3.8-flash-high  Gemini 3.8 Flash
+            cli-proxy-api/gemini-4-argon-high  Gemini 4 Argon
+            cli-proxy-api/claude-opus-5-5-high  Claude Opus 5.5
+            …
+```
+
+Pick the ones Antigravity serves.
+
+If CPA's config has `excluded-models.antigravity`, those are the **excluded** ones; what is not listed there is usually what Antigravity serves.
+
+### The name you list carries no provider prefix
+
+The `cli-proxy-api/gemini-3.8-flash-high` shown above is magpie's **full model id** (provider id, a slash, then the model name). The middleware receives the **bare model name after the slash**:
+
+| Where | Value |
+|---|---|
+| `magpie provider cli-proxy-api` shows | `cli-proxy-api/gemini-3.8-flash-high` |
+| `ctx.provider.model` in the middleware | `gemini-3.8-flash-high` |
+
+So list the **bare** name in `models`; do not add the `cli-proxy-api/` prefix.
+
+These are two different fields in magpie's `provider.Entry`:
+
+```go
+ID    string `json:"id"`    // what the agent sends magpie
+Model string `json:"model"` // what magpie sends the vendor
+```
+
+`provider.Resolve` returns the latter.
+
+### It is not the alias the client wrote
+
+`models` is matched against the model name magpie resolves and sends to the provider, not an alias in the client's request. If your client routes through an alias like `group/flash` while the provider receives `gemini-3.8-flash-high`, list the **latter**.
+
+### `models: []` disables the whole middleware
+
+The easiest trap:
+
+| Configuration | Behaviour |
+|---|---|
+| `models` not present | every model is handled |
+| `"models": []` | **nothing is handled** (an empty array matches no model) |
+| `"models": ["x"]` | only `x` is handled |
+
+Either leave the field out entirely, or list concrete model names. Never leave it as an empty array.
+
+### List only the models you actually use
+
+You do not need every Antigravity model. List the ones you really send through CPA and that carry the identity-leak risk:
+
+```json
+{
+  "providers": ["cli-proxy-api"],
+  "models": ["gemini-4-argon-high"]
+}
+```
+
+Other models (Codex, DeepSeek, …) are left alone — they are not served by Antigravity and do not need this.
 
 ## Options
 
@@ -94,10 +186,36 @@ magpie plugin options <plugin> '{"providers":["<your provider id>"]}'
 
 - `providers`: provider ids it acts on. Default `["cli-proxy-api"]`, the id a CPA provider usually has in magpie.
 - `accounts`: subscription kinds it acts on, for a provider logged in directly. Empty by default: a CPA provider is matched by id. Set `["antigravity"]` to also act on a direct Antigravity account.
-- `models`: exact model allowlist. Absent or empty means every model.
+- `models`: exact model allowlist; see "Filter order" below and "Only for models served by Antigravity". **Do not leave it as an empty array** — that disables the whole middleware.
 - `sanitizeBrands`: also replace competitor brand words with `Google`. Off by default because it is lossy — it rewrites API names, hostnames and model ids in prose too.
 - `cloakFallbackWords`: extra words to break with a zero-width space (U+200B) instead of replacing. Empty by default.
 - `off`: leave every request as it came.
+
+### Filter order
+
+The three filters are not peers; they are checked in this order:
+
+```
+1. off === true?                  → skip
+2. providers or accounts match?   → neither matches: skip
+3. models match?                  → no match: skip
+4. handle
+```
+
+In detail:
+
+- **`providers` and `accounts` are OR'd**: a provider id match, or an account kind match, is enough. This covers both ways a provider is reached — an API-key provider matched by id, and a directly signed-in subscription matched by account kind.
+- **`models` is AND'd**: it is only checked once the previous step matched.
+- **`models` absent = no filtering**; `models: []` = nothing matches.
+
+Examples:
+
+| providers | accounts | models | Result |
+|---|---|---|---|
+| `["cli-proxy-api"]` | `[]` | absent | every model of the CPA provider |
+| `["cli-proxy-api"]` | `[]` | `["gemini-3-flash"]` | that model only |
+| `["cli-proxy-api"]` | `["antigravity"]` | absent | the CPA provider **or** a direct Antigravity account |
+| `[]` | `[]` | absent | nothing at all |
 
 An empty `providers` and `accounts` together disable it entirely.
 
