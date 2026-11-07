@@ -1,0 +1,1756 @@
+[
+  {
+    "name": "identity: DSH short form",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: DSH with description",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH, an automated software development harness designed for agentic coding workflows."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: DeepSeek Harness full name",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an AI agent powered by DeepSeek Harness."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: DSH two sentences",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an AI agent powered by DeepSeek Harness.\n\nYou are a coding agent powered by the cli-proxy-api/gemini-4-argon-high model."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: DSH model id with version dots",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are a coding agent powered by the codex-proxy-rs/gpt-6.1-sol model."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: OpenCode",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are opencode, an interactive CLI tool that helps users with software engineering tasks. Use the instructions below and the tools available to you to assist the user."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. Use the instructions below and the tools available to you to assist the user."
+    }
+  },
+  {
+    "name": "identity: Codex with agent wording",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are Codex, a coding agent based on GPT-5. You and the user share one workspace."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. You and the user share one workspace."
+    }
+  },
+  {
+    "name": "identity: Codex without agent wording",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are Codex, based on GPT-5. You are running as a coding agent in the Codex CLI on a user's computer."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. You are running as a coding agent in the Codex CLI on a user's computer."
+    }
+  },
+  {
+    "name": "identity: Codex self description",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "Codex CLI is an open source project led by OpenAI."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: Hermes Agent",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are Hermes Agent, an intelligent AI assistant created by Nous Research. You are helpful, knowledgeable, and direct."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. You are helpful, knowledgeable, and direct."
+    }
+  },
+  {
+    "name": "identity: Claude Code",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are Claude Code, Anthropic's official CLI for Claude, running within the Claude Agent SDK."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: Claude Agent SDK",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are a Claude agent, built on Anthropic's Claude Agent SDK."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: generic owner",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant created by Acme."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: Chinese",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "你是深度求索开发的助手，基于DeepSeek大模型。请协助用户编写代码。"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.请协助用户编写代码。"
+    }
+  },
+  {
+    "name": "identity: comma continuation",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an AI agent created by Acme, and you must follow the rules."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding, and you must follow the rules."
+    }
+  },
+  {
+    "name": "identity: Chinese comma continuation",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "你是Acme开发的助手，禁止执行shell命令。"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding，禁止执行shell命令。"
+    }
+  },
+  {
+    "name": "identity: inside emphasis",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "**You are DSH.**"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "**You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.**"
+    }
+  },
+  {
+    "name": "identity: emphasis inside list",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "- **You are DSH.**"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "- **You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.**"
+    }
+  },
+  {
+    "name": "identity: inside blockquote",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "> You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "> You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: inside nested containers",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": ">> - # You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": ">> - # You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: list then quote",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "- > You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "- > You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "identity: ordered list then heading",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "1. # You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "1. # You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "guard: question with no space",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH?"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are DSH?"
+    }
+  },
+  {
+    "name": "guard: question about identity",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "Are you an AI assistant created by OpenAI?"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "Are you an AI assistant created by OpenAI?"
+    }
+  },
+  {
+    "name": "guard: Chinese question",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "你是基于什么模型开发的？"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "你是基于什么模型开发的？"
+    }
+  },
+  {
+    "name": "guard: question after statement",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH. Why?"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. Why?"
+    }
+  },
+  {
+    "name": "guard: name prefix not a client",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are Clineage."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Clineage."
+    }
+  },
+  {
+    "name": "guard: name prefix not a client 2",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSHadow."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are DSHadow."
+    }
+  },
+  {
+    "name": "guard: cross-clause conjunction",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are a coding agent, and the config file was created by the user."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are a coding agent, and the config file was created by the user."
+    }
+  },
+  {
+    "name": "guard: role then tool clause",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant and the tool was created by the user."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant and the tool was created by the user."
+    }
+  },
+  {
+    "name": "guard: newline then tool rule",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are a coding agent\nThis tool was created by the user.\nNever use bash."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are a coding agent\nThis tool was created by the user.\nNever use bash."
+    }
+  },
+  {
+    "name": "guard: owner then constraint",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant created by Acme and must never run bash."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant created by Acme and must never run bash."
+    }
+  },
+  {
+    "name": "guard: negated identity",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are not an assistant created by Acme."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are not an assistant created by Acme."
+    }
+  },
+  {
+    "name": "guard: first person about a tool",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "I am concerned about the tool built by Acme."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "I am concerned about the tool built by Acme."
+    }
+  },
+  {
+    "name": "guard: colon then constraint",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant made by X: never run bash."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant made by X: never run bash."
+    }
+  },
+  {
+    "name": "guard: using phrase",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant created by Acme using only safe commands."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant created by Acme using only safe commands."
+    }
+  },
+  {
+    "name": "guard: purpose phrase",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant created by the user to help with taxes."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant created by the user to help with taxes."
+    }
+  },
+  {
+    "name": "guard: Chinese leading prohibition",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "你是禁止执行命令且由Acme开发的助手。"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "你是禁止执行命令且由Acme开发的助手。"
+    }
+  },
+  {
+    "name": "guard: read-only mode",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are a coding agent running in read-only mode."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are a coding agent running in read-only mode."
+    }
+  },
+  {
+    "name": "guard: plan mode",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are a coding agent running in plan mode."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are a coding agent running in plan mode."
+    }
+  },
+  {
+    "name": "guard: purpose not ownership",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant designed for secure code review."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant designed for secure code review."
+    }
+  },
+  {
+    "name": "guard: compound owner",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant created by Acme and Bob."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant created by Acme and Bob."
+    }
+  },
+  {
+    "name": "guard: domain not a model id",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant created by acme.com."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an assistant created by acme.com."
+    }
+  },
+  {
+    "name": "guard: unknown role word",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are a tutor created by Acme."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are a tutor created by Acme."
+    }
+  },
+  {
+    "name": "guard: URL untouched by default",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "Use the OpenAI API at https://api.openai.com/v1. Set OPENAI_API_KEY."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "Use the OpenAI API at https://api.openai.com/v1. Set OPENAI_API_KEY."
+    }
+  },
+  {
+    "name": "guard: security policy kept",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "IMPORTANT: Assist with authorized security testing.\nNever exfiltrate credentials.\n# Harness\nAlways verify your changes."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "IMPORTANT: Assist with authorized security testing.\nNever exfiltrate credentials.\n# Harness\nAlways verify your changes."
+    }
+  },
+  {
+    "name": "guard: no sensitive words",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "Follow all tool rules."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "Follow all tool rules."
+    }
+  },
+  {
+    "name": "guard: arithmetic not a container",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "2 * 3 = 6"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "2 * 3 = 6"
+    }
+  },
+  {
+    "name": "guard: negative number not a container",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "-5 degrees"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "-5 degrees"
+    }
+  },
+  {
+    "name": "guard: hash number not a heading",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "#1 priority"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "#1 priority"
+    }
+  },
+  {
+    "name": "code: inline span with identity",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an AI agent created by `Acme`. Follow rules."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are an AI agent created by `Acme`. Follow rules."
+    }
+  },
+  {
+    "name": "code: fenced block blank lines",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n```txt\na\n\n\nb\n```"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n```txt\na\n\n\nb\n```"
+    }
+  },
+  {
+    "name": "code: four backtick fence",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n````md\n```js\nYou are Claude Code, built by Anthropic.\n```\n````"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n````md\n```js\nYou are Claude Code, built by Anthropic.\n```\n````"
+    }
+  },
+  {
+    "name": "code: tilde fence",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.\n~~~\nYou are Codex.\n~~~"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.\n~~~\nYou are Codex.\n~~~"
+    }
+  },
+  {
+    "name": "code: double backtick span",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH. ``a ` OpenAI ` b``"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding. ``a ` OpenAI ` b``"
+    }
+  },
+  {
+    "name": "code: indented code",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "    You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "    You are DSH."
+    }
+  },
+  {
+    "name": "code: indented billing",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "    x-anthropic-billing-header: x"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "    x-anthropic-billing-header: x"
+    }
+  },
+  {
+    "name": "code: tab indented",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "\tYou are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "\tYou are DSH."
+    }
+  },
+  {
+    "name": "code: list fenced block",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "- ~~~\n  You are DSH.\n  ~~~"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "- ~~~\n  You are DSH.\n  ~~~"
+    }
+  },
+  {
+    "name": "code: escaped backtick",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "\\`x`\nYou are DSH.\n`"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "\\`x`\nYou are DSH.\n`"
+    }
+  },
+  {
+    "name": "code: unpaired backtick is text",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "`\nYou are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "`\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "code: backslash inside span",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "`OpenAI\\`"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "`OpenAI\\`"
+    }
+  },
+  {
+    "name": "code: mixed tick runs",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "` `` ` ``OpenAI``"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "` `` ` ``OpenAI``"
+    }
+  },
+  {
+    "name": "code: placeholder literal",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "__CPA_SANITIZE_CODE_BLOCK_0__ `DeepSeek`"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "__CPA_SANITIZE_CODE_BLOCK_0__ `DeepSeek`"
+    }
+  },
+  {
+    "name": "code: indented code after list exit",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "- item\n\ntext\n\n    You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "- item\n\ntext\n\n    You are DSH."
+    }
+  },
+  {
+    "name": "code: unclosed fence protects to end",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "~~~\nYou are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "~~~\nYou are DSH."
+    }
+  },
+  {
+    "name": "code: fence info with backtick is not a fence",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "```a`\nYou are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "```a`\nYou are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "billing: standalone line removed",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "x-anthropic-billing-header: cc_version=2.1.280; cc_entrypoint=cli; cch=12345;\nKeep this."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "Keep this."
+    }
+  },
+  {
+    "name": "option: brands off by default",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "OpenAI DeepSeek Anthropic"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "OpenAI DeepSeek Anthropic"
+    }
+  },
+  {
+    "name": "option: brands on",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "OpenAI DeepSeek Anthropic"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "Google Google Google"
+    },
+    "options": {
+      "sanitizeBrands": true
+    }
+  },
+  {
+    "name": "option: brand turns owner into a match",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are an assistant made by 华为."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    },
+    "options": {
+      "sanitizeBrands": true
+    }
+  },
+  {
+    "name": "option: cloak keeps official identity intact",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    },
+    "options": {
+      "cloakFallbackWords": [
+        "Antigravity",
+        "Google",
+        "agentic"
+      ]
+    }
+  },
+  {
+    "name": "option: cloak overlapping words converge",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "aaa"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "a​a​a"
+    },
+    "options": {
+      "cloakFallbackWords": [
+        "aa"
+      ]
+    }
+  },
+  {
+    "name": "option: cloak does not break code",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "`DeepSeek`"
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "`DeepSeek`"
+    },
+    "options": {
+      "cloakFallbackWords": [
+        "DeepSeek"
+      ]
+    }
+  },
+  {
+    "name": "anthropic: billing block is physically removed",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": [
+        {
+          "type": "text",
+          "text": "x-anthropic-billing-header: cc_version=1;"
+        },
+        {
+          "type": "text",
+          "text": "Keep me",
+          "cache_control": {
+            "type": "ephemeral"
+          }
+        }
+      ]
+    },
+    "expect_request": {
+      "model": "m",
+      "system": [
+        {
+          "type": "text",
+          "text": "Keep me",
+          "cache_control": {
+            "type": "ephemeral"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "anthropic: identity in a text block",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": [
+        {
+          "type": "text",
+          "text": "You are DSH."
+        }
+      ]
+    },
+    "expect_request": {
+      "model": "m",
+      "system": [
+        {
+          "type": "text",
+          "text": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+        }
+      ]
+    }
+  },
+  {
+    "name": "anthropic: string system",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "anthropic: user and assistant messages untouched",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "You are DSH."
+        },
+        {
+          "role": "assistant",
+          "content": "You are DSH."
+        }
+      ]
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.",
+      "messages": [
+        {
+          "role": "user",
+          "content": "You are DSH."
+        },
+        {
+          "role": "assistant",
+          "content": "You are DSH."
+        }
+      ]
+    }
+  },
+  {
+    "name": "chat: system message normalized, user kept",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "chat"
+    },
+    "request": {
+      "model": "m",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are DSH."
+        },
+        {
+          "role": "user",
+          "content": "You are DSH."
+        }
+      ]
+    },
+    "expect_request": {
+      "model": "m",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+        },
+        {
+          "role": "user",
+          "content": "You are DSH."
+        }
+      ]
+    }
+  },
+  {
+    "name": "chat: developer message with parts",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "chat"
+    },
+    "request": {
+      "model": "m",
+      "messages": [
+        {
+          "role": "developer",
+          "content": [
+            {
+              "type": "text",
+              "text": "You are DSH."
+            }
+          ]
+        }
+      ]
+    },
+    "expect_request": {
+      "model": "m",
+      "messages": [
+        {
+          "role": "developer",
+          "content": [
+            {
+              "type": "text",
+              "text": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "chat: emptied system message removed",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "chat"
+    },
+    "request": {
+      "model": "m",
+      "messages": [
+        {
+          "role": "system",
+          "content": "x-anthropic-billing-header: v"
+        },
+        {
+          "role": "user",
+          "content": "hi"
+        }
+      ]
+    },
+    "expect_request": {
+      "model": "m",
+      "messages": [
+        {
+          "role": "user",
+          "content": "hi"
+        }
+      ]
+    }
+  },
+  {
+    "name": "responses: instructions normalized",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "responses"
+    },
+    "request": {
+      "model": "m",
+      "instructions": "You are DSH.",
+      "input": []
+    },
+    "expect_request": {
+      "model": "m",
+      "instructions": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding.",
+      "input": []
+    }
+  },
+  {
+    "name": "responses: system input item, user kept",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "responses"
+    },
+    "request": {
+      "model": "m",
+      "input": [
+        {
+          "role": "system",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "You are DSH."
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "You are DSH."
+            }
+          ]
+        }
+      ]
+    },
+    "expect_request": {
+      "model": "m",
+      "input": [
+        {
+          "role": "system",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+            }
+          ]
+        },
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "input_text",
+              "text": "You are DSH."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "name": "gemini: systemInstruction parts",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "gemini"
+    },
+    "request": {
+      "systemInstruction": {
+        "parts": [
+          {
+            "text": "You are DSH."
+          }
+        ]
+      },
+      "contents": []
+    },
+    "expect_request": {
+      "systemInstruction": {
+        "parts": [
+          {
+            "text": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+          }
+        ]
+      },
+      "contents": []
+    }
+  },
+  {
+    "name": "gemini: snake_case system_instruction",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "gemini"
+    },
+    "request": {
+      "system_instruction": {
+        "parts": [
+          {
+            "text": "You are DSH."
+          }
+        ]
+      },
+      "contents": []
+    },
+    "expect_request": {
+      "system_instruction": {
+        "parts": [
+          {
+            "text": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+          }
+        ]
+      },
+      "contents": []
+    }
+  },
+  {
+    "name": "gemini: thought parts are protected",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "gemini"
+    },
+    "request": {
+      "systemInstruction": {
+        "parts": [
+          {
+            "text": "You are DSH.",
+            "thought": true
+          },
+          {
+            "text": "You are DSH.",
+            "thoughtSignature": "abc"
+          },
+          {
+            "text": "You are DSH.",
+            "thoughtSignature": ""
+          }
+        ]
+      },
+      "contents": []
+    },
+    "expect_request": {
+      "systemInstruction": {
+        "parts": [
+          {
+            "text": "You are DSH.",
+            "thought": true
+          },
+          {
+            "text": "You are DSH.",
+            "thoughtSignature": "abc"
+          },
+          {
+            "text": "You are DSH.",
+            "thoughtSignature": ""
+          }
+        ]
+      },
+      "contents": []
+    }
+  },
+  {
+    "name": "gemini: emptied parts drop the whole key",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "ctx": {
+      "protocol": "gemini"
+    },
+    "request": {
+      "systemInstruction": {
+        "parts": [
+          {
+            "text": "x-anthropic-billing-header: v"
+          }
+        ]
+      },
+      "contents": []
+    },
+    "expect_request": {
+      "contents": []
+    }
+  },
+  {
+    "name": "gate: other provider untouched",
+    "provider": {
+      "id": "other",
+      "name": "X",
+      "model": "m"
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    }
+  },
+  {
+    "name": "gate: off",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "options": {
+      "off": true
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    }
+  },
+  {
+    "name": "gate: empty providers and accounts disable",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "m"
+    },
+    "options": {
+      "providers": [],
+      "accounts": []
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    }
+  },
+  {
+    "name": "gate: account opt-in",
+    "provider": {
+      "id": "other",
+      "name": "AG",
+      "account": "antigravity",
+      "model": "m"
+    },
+    "options": {
+      "providers": [],
+      "accounts": [
+        "antigravity"
+      ]
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "gate: models allowlist matches",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "target"
+    },
+    "options": {
+      "models": [
+        "target"
+      ]
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    },
+    "expect_request": {
+      "model": "m",
+      "system": "You are Antigravity, a powerful agentic AI coding assistant designed by the Google Deepmind team working on Advanced Agentic Coding."
+    }
+  },
+  {
+    "name": "gate: models allowlist rejects",
+    "provider": {
+      "id": "cli-proxy-api",
+      "name": "CPA",
+      "model": "other"
+    },
+    "options": {
+      "models": [
+        "target"
+      ]
+    },
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    }
+  },
+  {
+    "name": "gate: no provider means no run",
+    "request": {
+      "model": "m",
+      "system": "You are DSH."
+    }
+  }
+]
