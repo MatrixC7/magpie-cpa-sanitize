@@ -84,6 +84,7 @@ for (const [name, input] of samples) {
 console.log("汇总：清洗 " + changed + " 段，未改动 " + unchanged + " 段。");
 console.log("");
 console.log("注意：这里只验证「文本层」的清洗结果。");
-console.log("它是否真的在网关里跑，要看 magpie 的调用统计：");
-console.log("  magpie plugin list --json  →  middleware 段里的 calls / failures");
-console.log("  或 GUI 的 Plugins 页面，该插件卡片上的 “N calls, X µs each”");
+console.log("它是否真的在网关里跑，只能看 magpie 的 GUI：");
+console.log("  Plugins 页面，该插件卡片上的 “N calls, X µs each”");
+console.log("  （magpie plugin list --json 的 calls 永远是 0：计数在网关进程内存里，");
+console.log("    而每次执行 magpie 命令都是新进程）");
